@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/import_clipboard"
+        android:icon="@drawable/ic_copy"
+        android:title="@string/menu_item_import_config_clipboard" />
+    <item
+        android:id="@+id/import_qrcode"
+        android:icon="@drawable/ic_scan_24dp"
+        android:title="@string/menu_item_import_config_qrcode" />
+    <item
+        android:id="@+id/import_local"
+        android:icon="@drawable/ic_file_24dp"
+        android:title="@string/menu_item_import_config_local" />
+    <item
+        android:id="@+id/add_manually"
+        android:title="@string/menu_item_add_manually" />
+</menu>
