@@ -18,6 +18,8 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      SHOULD_BUILD: ${{ github.ref_type == 'tag' || github.event_name == 'workflow_dispatch' }}
 
     steps:
     - name: Checkout code
@@ -27,6 +29,7 @@ jobs:
         fetch-depth: '0'
 
     - name: Setup Android SDK
+      if: env.SHOULD_BUILD == 'true'
       uses: android-actions/setup-android@v3.2.0
       with:
         log-accepted-android-sdk-licenses: false
@@ -34,6 +37,7 @@ jobs:
         packages: 'platforms;android-36.1 build-tools;36.1.0 platform-tools'
 
     - name: Install NDK
+      if: env.SHOULD_BUILD == 'true'
       run: |
         echo "y" | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager \
           --channel=0 \
@@ -44,6 +48,7 @@ jobs:
             ndkVersion = "28.2.13676358"' ${{ github.workspace }}/V2rayNG/app/build.gradle.kts
 
     - name: Restore cached libhevtun
+      if: env.SHOULD_BUILD == 'true'
       id: cache-libhevtun-restore
       uses: actions/cache/restore@v4
       with:
@@ -51,22 +56,24 @@ jobs:
         key: libhevtun-${{ runner.os }}-${{ env.NDK_HOME }}-${{ hashFiles('.git/modules/hev-socks5-tunnel/HEAD') }}-${{ hashFiles('compile-hevtun.sh') }}
 
     - name: Build libhevtun
-      if: steps.cache-libhevtun-restore.outputs.cache-hit != 'true'
+      if: env.SHOULD_BUILD == 'true' && steps.cache-libhevtun-restore.outputs.cache-hit != 'true'
       run: |
         bash compile-hevtun.sh
     
     - name: Save libhevtun
-      if: steps.cache-libhevtun-restore.outputs.cache-hit != 'true'
+      if: env.SHOULD_BUILD == 'true' && steps.cache-libhevtun-restore.outputs.cache-hit != 'true'
       uses: actions/cache/save@v4
       with:
         path: ${{ github.workspace }}/libs
         key: libhevtun-${{ runner.os }}-${{ env.NDK_HOME }}-${{ hashFiles('.git/modules/hev-socks5-tunnel/HEAD') }}-${{ hashFiles('compile-hevtun.sh') }}
 
     - name: Copy libhevtun
+      if: env.SHOULD_BUILD == 'true'
       run: |
         cp -r ${{ github.workspace }}/libs ${{ github.workspace }}/V2rayNG/app
 
     - name: Fetch AndroidLibXrayLite tag
+      if: env.SHOULD_BUILD == 'true'
       run: |
         pushd AndroidLibXrayLite
         CURRENT_TAG=$(git describe --tags --abbrev=0)
@@ -75,6 +82,7 @@ jobs:
         popd
 
     - name: Download libv2ray
+      if: env.SHOULD_BUILD == 'true'
       uses: robinraju/release-downloader@v1.12
       with:
         repository: '2dust/AndroidLibXrayLite'
@@ -83,6 +91,7 @@ jobs:
         out-file-path: V2rayNG/app/libs/
 
     - name: Setup Java
+      if: env.SHOULD_BUILD == 'true'
       uses: actions/setup-java@v5
       with:
         distribution: 'temurin'
@@ -115,6 +124,7 @@ jobs:
         git push origin "${tag}"
 
     - name: Generate release notes
+      if: env.SHOULD_BUILD == 'true'
       id: release_notes
       run: |
         chmod +x scripts/get-release-notes.sh
@@ -122,6 +132,7 @@ jobs:
         echo "path=/tmp/release-notes.md" >> "$GITHUB_OUTPUT"
 
     - name: Decode Keystore
+      if: env.SHOULD_BUILD == 'true'
       uses: timheuer/base64-to-file@v1.2.4
       id: android_keystore
       with:
@@ -129,6 +140,7 @@ jobs:
         encodedString: ${{ secrets.APP_KEYSTORE_BASE64 }}
 
     - name: Build APK
+      if: env.SHOULD_BUILD == 'true'
       run: |
         cd ${{ github.workspace }}/V2rayNG
         echo "sdk.dir=${ANDROID_HOME}" > local.properties
@@ -138,43 +150,38 @@ jobs:
     
     - name: Upload arm64-v8a APK
       uses: actions/upload-artifact@v7
-      if: ${{  success() }}
+      if: env.SHOULD_BUILD == 'true' && success()
       with:
         name: arm64-v8a
         path: ${{ github.workspace }}/V2rayNG/app/build/outputs/apk/*/release/*arm64-v8a*.apk
 
     - name: Upload armeabi-v7a APK
       uses: actions/upload-artifact@v7
-      if: ${{  success() }}
+      if: env.SHOULD_BUILD == 'true' && success()
       with:
         name: armeabi-v7a
         path: ${{ github.workspace }}/V2rayNG/app/build/outputs/apk/*/release/*armeabi-v7a*.apk
 
     - name: Upload x86 APK
       uses: actions/upload-artifact@v7
-      if: ${{  success() }}
+      if: env.SHOULD_BUILD == 'true' && success()
       with:
         name: x86-apk
         path: ${{ github.workspace }}/V2rayNG/app/build/outputs/apk/*/release/*x86*.apk
 
     - name: Create or update GitHub release
-      if: ${{ success() }}
+      if: env.SHOULD_BUILD == 'true' && success()
       env:
         GH_TOKEN: ${{ github.token }}
       run: |
         tag="${{ steps.release_tag.outputs.value }}"
         title="v2rayNG-Pro ${tag}"
         notes_file="${{ steps.release_notes.outputs.path }}"
+        apk_glob="${{ github.workspace }}/V2rayNG/app/build/outputs/apk/playstore/release/*.apk"
 
         if gh release view "${tag}" >/dev/null 2>&1; then
           gh release edit "${tag}" --title "${title}" --notes-file "${notes_file}"
+          gh release upload "${tag}" ${apk_glob} --clobber
         else
-          gh release create "${tag}" --title "${title}" --notes-file "${notes_file}"
+          gh release create "${tag}" ${apk_glob} --title "${title}" --notes-file "${notes_file}"
         fi
-
-    - name: Upload to release
-      if: ${{ success() }}
-      env:
-        GH_TOKEN: ${{ github.token }}
-      run: |
-        gh release upload "${{ steps.release_tag.outputs.value }}" ${{ github.workspace }}/V2rayNG/app/build/outputs/apk/playstore/release/*.apk --clobber
