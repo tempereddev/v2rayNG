@@ -180,8 +180,8 @@ jobs:
         apk_glob="${{ github.workspace }}/V2rayNG/app/build/outputs/apk/playstore/release/*.apk"
 
         if gh release view "${tag}" >/dev/null 2>&1; then
-          gh release edit "${tag}" --title "${title}" --notes-file "${notes_file}"
+          gh release edit "${tag}" --title "${title}" --notes-file "${notes_file}" --draft=false --latest
           gh release upload "${tag}" ${apk_glob} --clobber
         else
-          gh release create "${tag}" ${apk_glob} --title "${title}" --notes-file "${notes_file}"
+          gh release create "${tag}" ${apk_glob} --title "${title}" --notes-file "${notes_file}" --latest
         fi
