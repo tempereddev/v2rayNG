@@ -52,5 +52,6 @@ class AboutActivity : BaseActivity() {
         binding.tvAppName.text = AppConfig.FORK_DISPLAY_NAME
         binding.tvVersion.text = "v${BuildConfig.VERSION_NAME}  (${V2RayNativeManager.getLibVersion()})"
         binding.tvUpstreamVersion.text = getString(R.string.about_upstream_version, AppConfig.UPSTREAM_VERSION_NAME)
+        binding.tvModifiedBy.text = "Modified by Maziyar"
     }
 }

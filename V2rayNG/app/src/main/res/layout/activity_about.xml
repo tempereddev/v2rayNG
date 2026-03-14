@@ -42,6 +42,15 @@
                 android:textAppearance="@style/TextAppearance.AppCompat.Small"
                 android:textSize="13sp" />
 
+            <TextView
+                android:id="@+id/tv_modified_by"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:alpha="0.45"
+                android:textAppearance="@style/TextAppearance.AppCompat.Small"
+                android:textSize="12sp" />
+
         </LinearLayout>
 
         <View
