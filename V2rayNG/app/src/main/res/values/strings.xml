@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name" translatable="false">v2rayNG</string>
+    <string name="app_name" translatable="false">v2rayNG Pro</string>
     <string name="app_widget_name">Switch</string>
     <string name="app_tile_name">Switch</string>
     <string name="app_tile_first_use">First use of this feature, please use the app to add server</string>
@@ -248,7 +248,7 @@
     <string name="title_privacy_policy">Privacy policy</string>
     <string name="title_qr_code">QR code</string>
     <string name="title_about">About</string>
-    <string name="about_modified_signature" translatable="false">Modified by Maziyar\n1.0.1</string>
+    <string name="about_modified_signature" translatable="false">Modified by Maziyar\nv2rayNG-Pro 1.0.2</string>
     <string name="title_source_code">Source code</string>
     <string name="title_oss_license">Open Source licenses</string>
     <string name="title_tg_channel">Telegram channel</string>
