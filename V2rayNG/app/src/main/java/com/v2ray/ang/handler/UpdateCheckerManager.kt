@@ -47,6 +47,7 @@ object UpdateCheckerManager {
                 latestVersion = latestVersion,
                 releaseNotes = latestRelease.body,
                 downloadUrl = getDownloadUrl(latestRelease, Build.SUPPORTED_ABIS[0]),
+                releasePageUrl = latestRelease.htmlUrl,
                 isPreRelease = latestRelease.prerelease
             )
         } else {
@@ -160,8 +161,16 @@ object UpdateCheckerManager {
         return 0
     }
 
-    private fun getDownloadUrl(release: GitHubRelease, abi: String): String {
-        val asset = release.assets.firstOrNull { it.name?.contains(abi, true) == true }
-        return asset?.browserDownloadUrl ?: throw IllegalStateException("No compatible APK found for $abi")
+    private fun getDownloadUrl(release: GitHubRelease, abi: String): String? {
+        val normalizedAbi = abi.lowercase()
+        val apkAssets = release.assets.filter { it.name.endsWith(".apk", true) }
+
+        val abiMatch = apkAssets.firstOrNull { it.name.contains(normalizedAbi, true) }
+        if (abiMatch != null) return abiMatch.browserDownloadUrl
+
+        val universalMatch = apkAssets.firstOrNull { it.name.contains("universal", true) }
+        if (universalMatch != null) return universalMatch.browserDownloadUrl
+
+        return apkAssets.firstOrNull()?.browserDownloadUrl
     }
 }

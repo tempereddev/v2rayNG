@@ -116,7 +116,7 @@ class CheckUpdateActivity : BaseActivity(), DownloadApkService.DownloadListener 
         binding.cardUpdateInfo.visibility = View.VISIBLE
         binding.tvUpdateVersion.text = getString(R.string.update_new_version_found, result.latestVersion)
 
-        val notes = result.releaseNotes?.trim()?.let(::stripMarkdown)
+        val notes = buildReleaseNotes(result)
         if (!notes.isNullOrEmpty()) {
             binding.tvReleaseNotesLabel.visibility = View.VISIBLE
             binding.tvReleaseNotes.visibility = View.VISIBLE
@@ -130,12 +130,24 @@ class CheckUpdateActivity : BaseActivity(), DownloadApkService.DownloadListener 
         binding.tvDownloadStatus.visibility = View.GONE
         binding.layoutButtons.visibility = View.VISIBLE
         binding.btnDownload.isEnabled = true
-        binding.btnDownload.text = getString(R.string.update_download_and_install)
+        binding.btnDownload.text = getString(
+            if (result.downloadUrl != null) {
+                R.string.update_download_and_install
+            } else {
+                R.string.update_open_release_page
+            }
+        )
     }
 
     private fun startDownloadAndInstall() {
         val result = currentResult ?: return
-        val downloadUrl = result.downloadUrl ?: return
+        val downloadUrl = result.downloadUrl
+
+        if (downloadUrl == null) {
+            val releasePageUrl = result.releasePageUrl ?: return
+            Utils.openUri(this, releasePageUrl)
+            return
+        }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && !packageManager.canRequestPackageInstalls()) {
             toast(R.string.update_install_permission_required)
@@ -152,6 +164,18 @@ class CheckUpdateActivity : BaseActivity(), DownloadApkService.DownloadListener 
         binding.tvDownloadStatus.text = getString(R.string.update_download_progress, 0)
 
         DownloadApkService.start(this, downloadUrl, result.latestVersion ?: "unknown")
+    }
+
+    private fun buildReleaseNotes(result: CheckUpdateResult): String {
+        val baseNotes = result.releaseNotes?.trim()?.let(::stripMarkdown).orEmpty()
+        return if (result.downloadUrl != null) {
+            baseNotes
+        } else {
+            listOf(
+                getString(R.string.update_asset_pending),
+                baseNotes
+            ).filter { it.isNotBlank() }.joinToString("\n\n")
+        }
     }
 
     private fun stripMarkdown(text: String): String {

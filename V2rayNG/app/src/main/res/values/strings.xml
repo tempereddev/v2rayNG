@@ -460,6 +460,8 @@
     <string name="update_download_failed">Download failed</string>
     <string name="update_installing">Installing update...</string>
     <string name="update_download_and_install">Download &amp; Install</string>
+    <string name="update_open_release_page">Open release page</string>
+    <string name="update_asset_pending">A newer version exists, but a device-matched APK is not ready yet. Open the release page to download it manually.</string>
     <string name="update_install_permission_required">Install permission required to update</string>
     <string name="update_release_notes">Release notes</string>
     <string name="update_later">Later</string>
