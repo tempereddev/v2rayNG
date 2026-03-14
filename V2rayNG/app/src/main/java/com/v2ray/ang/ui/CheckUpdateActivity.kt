@@ -20,6 +20,7 @@ import com.v2ray.ang.handler.MmkvManager
 import com.v2ray.ang.handler.UpdateCheckerManager
 import com.v2ray.ang.handler.V2RayNativeManager
 import com.v2ray.ang.service.DownloadApkService
+import com.v2ray.ang.util.Utils
 import kotlinx.coroutines.launch
 
 class CheckUpdateActivity : BaseActivity(), DownloadApkService.DownloadListener {

@@ -2,6 +2,13 @@
 
 All notable changes to `v2rayNG-Pro` are tracked here so the in-app updater, About screen, and GitHub releases can tell the same story.
 
+## 1.0.6 - 2026-03-13
+
+### Release reliability
+- Fixed the missing `Utils` import that broke the Kotlin release build in 1.0.5.
+- Stabilized the GitHub Actions release flow so `master` only prepares tags and the actual APK build happens on tagged/manual release runs.
+- Prevented half-published release pages by creating or updating releases only during the buildable release path.
+
 ## 1.0.5 - 2026-03-13
 
 ### Build transparency

@@ -1,6 +1,21 @@
 {
-  "currentVersion": "1.0.5",
+  "currentVersion": "1.0.6",
   "releases": [
+    {
+      "version": "1.0.6",
+      "title": "Shippable transparency release",
+      "summary": "This build fixes the release-blocking bug from 1.0.5 and keeps the new update transparency system intact.",
+      "highlights": [
+        "Fixed the missing Utils import that broke the release build pipeline.",
+        "Stabilized GitHub Actions so master prepares tags while real APK publishing happens on release runs.",
+        "Retained the new What's New dialog, richer About details, and managed release notes."
+      ],
+      "userImpact": [
+        "This is the first clean release target for the new update experience.",
+        "Users should no longer see a half-ready release line as the intended update destination."
+      ],
+      "releaseUrl": "https://github.com/tempereddev/v2rayNG/releases/tag/1.0.6"
+    },
     {
       "version": "1.0.5",
       "title": "Transparent release intelligence",
