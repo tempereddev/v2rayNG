@@ -818,18 +818,15 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
             return
         }
 
-        // Always show banner immediately if cached update exists
+        // Show cached banner immediately while fresh check runs in background
         val cached = UpdateCheckerManager.getCachedUpdateResult()
         if (cached != null && cached.hasUpdate) {
             updateBannerFromState(currentState)
         }
 
-        if (!UpdateCheckerManager.shouldAutoCheck()) return
-
         lifecycleScope.launch {
             try {
                 val result = UpdateCheckerManager.checkForUpdate(false)
-                UpdateCheckerManager.markUpdateChecked()
                 if (result.hasUpdate) {
                     UpdateCheckerManager.cacheUpdateResult(result)
                 } else {

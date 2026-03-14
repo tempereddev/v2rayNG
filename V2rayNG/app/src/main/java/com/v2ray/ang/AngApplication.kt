@@ -3,10 +3,14 @@ package com.v2ray.ang
 import android.content.Context
 import androidx.multidex.MultiDexApplication
 import androidx.work.Configuration
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.PeriodicWorkRequest
 import androidx.work.WorkManager
 import com.tencent.mmkv.MMKV
 import com.v2ray.ang.AppConfig.ANG_PACKAGE
+import com.v2ray.ang.handler.AppUpdateWorker
 import com.v2ray.ang.handler.SettingsManager
+import java.util.concurrent.TimeUnit
 
 class AngApplication : MultiDexApplication() {
     companion object {
@@ -37,6 +41,8 @@ class AngApplication : MultiDexApplication() {
         // Initialize WorkManager with the custom configuration
         WorkManager.initialize(this, workManagerConfiguration)
 
+        scheduleAppUpdateCheck()
+
         // Ensure critical preference defaults are present in MMKV early
         SettingsManager.initApp(this)
         SettingsManager.setNightMode()
@@ -44,5 +50,17 @@ class AngApplication : MultiDexApplication() {
         es.dmoral.toasty.Toasty.Config.getInstance()
             .setGravity(android.view.Gravity.BOTTOM, 0, 300)
             .apply()
+    }
+
+    private fun scheduleAppUpdateCheck() {
+        val request = PeriodicWorkRequest.Builder(
+            AppUpdateWorker::class.java,
+            15, TimeUnit.MINUTES
+        ).build()
+        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+            AppConfig.APP_UPDATE_WORKER_NAME,
+            ExistingPeriodicWorkPolicy.KEEP,
+            request
+        )
     }
 }

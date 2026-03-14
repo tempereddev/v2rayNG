@@ -195,7 +195,8 @@ object AppConfig {
     const val SUBSCRIPTION_UPDATE_CHANNEL_NAME = "Subscription Update Service"
     const val APP_UPDATE_CHANNEL = "app_update_channel"
     const val APP_UPDATE_CHANNEL_NAME = "App Update Service"
-    const val UPDATE_CHECK_INTERVAL_MS = 6 * 60 * 60 * 1000L
+    const val APP_UPDATE_WORKER_NAME = "app_update_checker"
+    const val NOTIFICATION_ID_APP_UPDATE = 9529
 
     /** Protocols Scheme **/
     const val VMESS = "vmess://"
