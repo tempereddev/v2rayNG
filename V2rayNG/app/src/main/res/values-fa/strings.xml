@@ -262,6 +262,13 @@
     <string name="title_pref_hev_tunnel_loglevel">سطح گزارشات Hev Tun</string>
     <string name="title_pref_hev_tunnel_rw_timeout">زمان انتظار خواندن/نوشتن Hev Tun (ثانیه) (پیش‌فرض tcp,udp 300،60)</string>
 
+    <!-- Reset settings -->
+    <string name="title_reset_settings">بازنشانی تمام تنظیمات</string>
+    <string name="summary_reset_settings">بازگرداندن تمام تنظیمات به مقادیر پیش‌فرض</string>
+    <string name="reset_settings_confirm_title">بازنشانی تنظیمات؟</string>
+    <string name="reset_settings_confirm_message">تمام تنظیمات به مقادیر پیش‌فرض بازگردانده می‌شوند. کانفیگ‌ها و اشتراک‌های شما تحت تأثیر قرار نمی‌گیرند.</string>
+    <string name="reset_settings_success">تنظیمات به حالت پیش‌فرض بازنشانی شد</string>
+
     <string name="title_logcat">گزارشات</string>
     <string name="logcat_copy">کپی</string>
     <string name="logcat_clear">پاک کردن</string>

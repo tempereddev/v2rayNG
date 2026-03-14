@@ -275,6 +275,13 @@
     <string name="title_pref_hev_tunnel_loglevel">Hev Tun Log Level</string>
     <string name="title_pref_hev_tunnel_rw_timeout">Hev Tun read/write timeout (seconds) (tcp,udp default 300,60)</string>
 
+    <!-- Reset settings -->
+    <string name="title_reset_settings">Reset all settings</string>
+    <string name="summary_reset_settings">Restore all settings to their default values</string>
+    <string name="reset_settings_confirm_title">Reset settings?</string>
+    <string name="reset_settings_confirm_message">All settings will be restored to their default values. Your server configs and subscriptions will not be affected.</string>
+    <string name="reset_settings_success">Settings have been reset to defaults</string>
+
     <string name="title_logcat">Logcat</string>
     <string name="logcat_copy">Copy</string>
     <string name="logcat_clear">Clear</string>

@@ -2,6 +2,12 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
+    <Preference
+        android:key="pref_reset_all_settings"
+        android:title="@string/title_reset_settings"
+        android:summary="@string/summary_reset_settings"
+        android:icon="@android:drawable/ic_menu_revert" />
+
     <PreferenceCategory android:title="@string/title_ui_settings">
         <CheckBoxPreference
             android:key="pref_speed_enabled"

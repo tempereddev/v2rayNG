@@ -2,9 +2,12 @@ package com.v2ray.ang.ui
 
 import android.os.Bundle
 import android.view.View
+import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.preference.CheckBoxPreference
 import androidx.preference.EditTextPreference
 import androidx.preference.ListPreference
+import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequest
@@ -62,6 +65,11 @@ class SettingsActivity : BaseActivity() {
             preferenceManager.preferenceDataStore = MmkvPreferenceDataStore()
 
             addPreferencesFromResource(R.xml.pref_settings)
+
+            findPreference<Preference>("pref_reset_all_settings")?.setOnPreferenceClickListener {
+                showResetConfirmDialog()
+                true
+            }
 
             initPreferenceSummaries()
 
@@ -261,6 +269,20 @@ class SettingsActivity : BaseActivity() {
         private fun updateHevTunSettings(enabled: Boolean) {
             hevTunLogLevel?.isEnabled = enabled
             hevTunRwTimeout?.isEnabled = enabled
+        }
+
+        private fun showResetConfirmDialog() {
+            val ctx = context ?: return
+            AlertDialog.Builder(ctx)
+                .setTitle(R.string.reset_settings_confirm_title)
+                .setMessage(R.string.reset_settings_confirm_message)
+                .setPositiveButton(android.R.string.ok) { _, _ ->
+                    MmkvManager.resetAllSettings()
+                    Toast.makeText(ctx, R.string.reset_settings_success, Toast.LENGTH_SHORT).show()
+                    activity?.recreate()
+                }
+                .setNegativeButton(android.R.string.cancel, null)
+                .show()
         }
     }
 

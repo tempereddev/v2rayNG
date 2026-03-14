@@ -719,4 +719,16 @@ object MmkvManager {
     }
 
     //endregion
+
+    //region Settings Reset
+
+    /**
+     * Clears all user-configurable settings, restoring defaults.
+     * Server configs, subscriptions, and routing rules are not affected.
+     */
+    fun resetAllSettings() {
+        settingsStorage.clearAll()
+    }
+
+    //endregion
 }
