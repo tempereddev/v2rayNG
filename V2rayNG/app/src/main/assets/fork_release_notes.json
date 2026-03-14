@@ -1,20 +1,23 @@
 {
-  "currentVersion": "1.0.8",
+  "currentVersion": "1.0.9",
   "releases": [
     {
-      "version": "1.0.8",
-      "title": "Advanced update system",
-      "summary": "Complete overhaul of the in-app update system with professional download management.",
+      "version": "1.0.9",
+      "title": "Advanced update system and UI cleanup",
+      "summary": "Professional download manager with resume support, cleaner About page, and removal of unnecessary popups.",
       "highlights": [
         "Resumable downloads that survive app restarts and network interruptions.",
         "Pause, resume, and cancel downloads from the notification or the app.",
         "Smart main screen banner showing real-time download progress.",
-        "Auto-retry on failure with network-aware pause and resume."
+        "Auto-retry on failure with network-aware pause and resume.",
+        "Redesigned About page with clean header layout.",
+        "Removed What's New popup on app launch."
       ],
       "userImpact": [
-        "Downloading updates is now reliable even on unstable connections."
+        "Downloading updates is now reliable even on unstable connections.",
+        "Cleaner first-launch experience without unnecessary dialogs."
       ],
-      "releaseUrl": "https://github.com/tempereddev/v2rayNG/releases/tag/1.0.8"
+      "releaseUrl": "https://github.com/tempereddev/v2rayNG/releases/tag/1.0.9"
     },
     {
       "version": "1.0.7",
