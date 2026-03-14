@@ -178,11 +178,6 @@ object UpdateCheckerManager {
         context.startActivity(intent)
     }
 
-    fun shouldAutoCheck(): Boolean {
-        val lastCheck = MmkvManager.decodeSettingsString(AppConfig.PREF_LAST_UPDATE_CHECK)?.toLongOrNull() ?: 0L
-        return System.currentTimeMillis() - lastCheck > AppConfig.UPDATE_CHECK_INTERVAL_MS
-    }
-
     fun markUpdateChecked() {
         MmkvManager.encodeSettings(AppConfig.PREF_LAST_UPDATE_CHECK, System.currentTimeMillis().toString())
     }
