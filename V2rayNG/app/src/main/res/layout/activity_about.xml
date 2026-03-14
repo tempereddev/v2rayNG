@@ -203,7 +203,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/title_about"
-                    android:textAppearance="@style/TextAppearance.AppCompat.Small" />
+                    android:textAppearance="@style/TextAppearance.AppCompat.Small"
+                    android:textSize="15sp" />
 
                 <TextView
                     android:id="@+id/tv_upstream_version"
@@ -211,7 +212,8 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/padding_spacing_dp8"
                     android:text="@string/title_about"
-                    android:textAppearance="@style/TextAppearance.AppCompat.Small" />
+                    android:textAppearance="@style/TextAppearance.AppCompat.Small"
+                    android:textSize="14sp" />
 
                 <TextView
                     android:id="@+id/tv_app_id"
@@ -219,26 +221,8 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/padding_spacing_dp8"
                     android:text="@string/title_about"
-                    android:textAppearance="@style/TextAppearance.AppCompat.Small" />
-
-                <TextView
-                    android:id="@+id/tv_current_build_highlights_label"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/padding_spacing_dp16"
-                    android:gravity="center"
-                    android:text="@string/about_current_build_highlights"
                     android:textAppearance="@style/TextAppearance.AppCompat.Small"
-                    android:visibility="gone" />
-
-                <TextView
-                    android:id="@+id/tv_current_build_highlights"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/padding_spacing_dp8"
-                    android:gravity="center"
-                    android:textAppearance="@style/TextAppearance.AppCompat.Small"
-                    android:visibility="gone" />
+                    android:textSize="13sp" />
             </LinearLayout>
 
         </LinearLayout>

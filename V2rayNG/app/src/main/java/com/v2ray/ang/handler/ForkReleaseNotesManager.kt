@@ -38,6 +38,19 @@ object ForkReleaseNotesManager {
         return sections.joinToString("\n\n").trim()
     }
 
+    fun formatForDialog(release: ForkReleaseEntry): String {
+        val compactHighlights = release.highlights
+            .map { it.trim() }
+            .filter { it.isNotEmpty() }
+            .take(3)
+
+        if (compactHighlights.isEmpty()) {
+            return release.summary.trim()
+        }
+
+        return compactHighlights.joinToString("\n") { "• $it" }
+    }
+
     fun getReleaseUrl(release: ForkReleaseEntry): String {
         val explicitUrl = release.releaseUrl?.trim().orEmpty()
         if (explicitUrl.isNotEmpty()) {

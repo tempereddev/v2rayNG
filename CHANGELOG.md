@@ -2,6 +2,13 @@
 
 All notable changes to `v2rayNG-Pro` are tracked here so the in-app updater, About screen, and GitHub releases can tell the same story.
 
+## 1.0.7 - 2026-03-13
+
+### UI polish
+- Simplified About so it only keeps the essential fork and upstream version details.
+- Reduced the visual weight of the "Modified by Maziyar" line to make the page cleaner and more professional.
+- Replaced the long What's New text block with a smaller, more minimal dialog layout.
+
 ## 1.0.6 - 2026-03-13
 
 ### Release reliability

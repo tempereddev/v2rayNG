@@ -249,9 +249,8 @@
     <string name="title_qr_code">QR code</string>
     <string name="title_about">About</string>
     <string name="about_fork_version" translatable="false">%1$s v%2$s\nCore: %3$s</string>
-    <string name="about_upstream_version" translatable="false">Based on official v2rayNG %1$s\nUpstream commit: %2$s</string>
-    <string name="about_build_identity" translatable="false">Modified by %1$s\nIndependent package: %2$s</string>
-    <string name="about_current_build_highlights">Current build highlights</string>
+    <string name="about_upstream_version" translatable="false">Based on v2rayNG %1$s</string>
+    <string name="about_build_identity" translatable="false">Modified by %1$s</string>
     <string name="title_source_code">Fork source code</string>
     <string name="title_upstream_project">Original v2rayNG project</string>
     <string name="title_release_history">Release history</string>

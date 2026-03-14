@@ -24,12 +24,14 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.tabs.TabLayoutMediator
 import com.v2ray.ang.AppConfig
 import com.v2ray.ang.BuildConfig
 import com.v2ray.ang.R
 import com.v2ray.ang.databinding.ActivityMainBinding
+import com.v2ray.ang.databinding.DialogWhatsNewBinding
 import com.v2ray.ang.databinding.DialogImportSubscriptionBinding
 import com.v2ray.ang.dto.SubscriptionItem
 import com.v2ray.ang.dto.TestServiceMessage
@@ -853,9 +855,13 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
             return
         }
 
-        AlertDialog.Builder(this)
-            .setTitle(getString(R.string.whats_new_title, currentRelease.version))
-            .setMessage(message)
+        val dialogBinding = DialogWhatsNewBinding.inflate(layoutInflater)
+        dialogBinding.tvWhatsNewTitle.text = getString(R.string.whats_new_title, currentRelease.version)
+        dialogBinding.tvWhatsNewSummary.text = currentRelease.summary.trim()
+        dialogBinding.tvWhatsNewHighlights.text = ForkReleaseNotesManager.formatForDialog(currentRelease)
+
+        MaterialAlertDialogBuilder(this)
+            .setView(dialogBinding.root)
             .setPositiveButton(R.string.whats_new_view_release) { _, _ ->
                 Utils.openUri(this, ForkReleaseNotesManager.getReleaseUrl(currentRelease))
             }

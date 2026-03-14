@@ -1,6 +1,20 @@
 {
-  "currentVersion": "1.0.6",
+  "currentVersion": "1.0.7",
   "releases": [
+    {
+      "version": "1.0.7",
+      "title": "Minimal UI polish",
+      "summary": "A cleaner release focused on making About and What's New feel lighter and more professional.",
+      "highlights": [
+        "About now shows only the important fork and upstream version details.",
+        "The fork signature line is softer and visually quieter.",
+        "What's New is now a smaller minimal dialog with shorter text."
+      ],
+      "userImpact": [
+        "The update experience feels cleaner and the app explains itself without looking crowded."
+      ],
+      "releaseUrl": "https://github.com/tempereddev/v2rayNG/releases/tag/1.0.7"
+    },
     {
       "version": "1.0.6",
       "title": "Shippable transparency release",

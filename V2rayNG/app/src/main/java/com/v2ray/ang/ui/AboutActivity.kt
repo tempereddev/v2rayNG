@@ -1,11 +1,11 @@
 package com.v2ray.ang.ui
 
 import android.os.Bundle
+import androidx.core.content.ContextCompat
 import com.v2ray.ang.AppConfig
 import com.v2ray.ang.BuildConfig
 import com.v2ray.ang.R
 import com.v2ray.ang.databinding.ActivityAboutBinding
-import com.v2ray.ang.handler.ForkReleaseNotesManager
 import com.v2ray.ang.handler.V2RayNativeManager
 import com.v2ray.ang.util.Utils
 
@@ -59,24 +59,13 @@ class AboutActivity : BaseActivity() {
         )
         binding.tvUpstreamVersion.text = getString(
             R.string.about_upstream_version,
-            AppConfig.UPSTREAM_VERSION_NAME,
-            AppConfig.UPSTREAM_COMMIT
+            AppConfig.UPSTREAM_VERSION_NAME
         )
         binding.tvAppId.text = getString(
             R.string.about_build_identity,
-            AppConfig.FORK_MAINTAINER,
-            BuildConfig.APPLICATION_ID
+            AppConfig.FORK_MAINTAINER
         )
-
-        val currentRelease = ForkReleaseNotesManager.getCurrentRelease(this)
-        val highlightsText = currentRelease?.let { ForkReleaseNotesManager.formatForDisplay(this, it) }.orEmpty()
-        if (highlightsText.isNotBlank()) {
-            binding.tvCurrentBuildHighlightsLabel.visibility = android.view.View.VISIBLE
-            binding.tvCurrentBuildHighlights.visibility = android.view.View.VISIBLE
-            binding.tvCurrentBuildHighlights.text = highlightsText
-        } else {
-            binding.tvCurrentBuildHighlightsLabel.visibility = android.view.View.GONE
-            binding.tvCurrentBuildHighlights.visibility = android.view.View.GONE
-        }
+        binding.tvAppId.setTextColor(ContextCompat.getColor(this, R.color.md_theme_onSurfaceVariant))
+        binding.tvAppId.alpha = 0.72f
     }
 }
