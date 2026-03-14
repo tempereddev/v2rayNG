@@ -812,21 +812,19 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
     }
 
     private fun checkForAppUpdate() {
-        // If there's already an active download state, just show the banner
         val currentState = DownloadStateManager.getState()
         if (currentState.status != DownloadStatus.IDLE) {
             updateBannerFromState(currentState)
             return
         }
 
-        if (!UpdateCheckerManager.shouldAutoCheck()) {
-            // Check if there's a cached update result to show
-            val cached = UpdateCheckerManager.getCachedUpdateResult()
-            if (cached != null && cached.hasUpdate) {
-                updateBannerFromState(currentState)
-            }
-            return
+        // Always show banner immediately if cached update exists
+        val cached = UpdateCheckerManager.getCachedUpdateResult()
+        if (cached != null && cached.hasUpdate) {
+            updateBannerFromState(currentState)
         }
+
+        if (!UpdateCheckerManager.shouldAutoCheck()) return
 
         lifecycleScope.launch {
             try {
@@ -834,6 +832,8 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
                 UpdateCheckerManager.markUpdateChecked()
                 if (result.hasUpdate) {
                     UpdateCheckerManager.cacheUpdateResult(result)
+                } else {
+                    UpdateCheckerManager.clearCachedUpdateResult()
                 }
                 withContext(Dispatchers.Main) {
                     updateBannerFromState(DownloadStateManager.getState())
