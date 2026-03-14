@@ -23,12 +23,13 @@ class AppUpdateWorker(context: Context, params: WorkerParameters) :
     override suspend fun doWork(): Result {
         Log.i(AppConfig.TAG, "AppUpdateWorker: checking for app update")
 
+        val includePreRelease = MmkvManager.decodeSettingsBool(AppConfig.PREF_CHECK_UPDATE_PRE_RELEASE, false)
         return try {
-            val result = UpdateCheckerManager.checkForUpdate(false)
+            val result = UpdateCheckerManager.checkForUpdate(includePreRelease)
             if (result.hasUpdate) {
                 UpdateCheckerManager.cacheUpdateResult(result)
-                sendUpdateNotification(result.latestVersion ?: "")
-                Log.i(AppConfig.TAG, "AppUpdateWorker: update found v${result.latestVersion}")
+                sendUpdateNotification(result.latestVersion ?: "", result.isPreRelease)
+                Log.i(AppConfig.TAG, "AppUpdateWorker: update found v${result.latestVersion} preRelease=$includePreRelease")
             } else {
                 UpdateCheckerManager.clearCachedUpdateResult()
                 Log.i(AppConfig.TAG, "AppUpdateWorker: already up to date")
@@ -41,7 +42,7 @@ class AppUpdateWorker(context: Context, params: WorkerParameters) :
     }
 
     @SuppressLint("MissingPermission")
-    private fun sendUpdateNotification(version: String) {
+    private fun sendUpdateNotification(version: String, isPreRelease: Boolean = false) {
         val nm = NotificationManagerCompat.from(applicationContext)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -60,10 +61,13 @@ class AppUpdateWorker(context: Context, params: WorkerParameters) :
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
 
+        val channelLabel = applicationContext.getString(
+            if (isPreRelease) R.string.update_channel_prerelease else R.string.update_channel_stable
+        )
         val notification = NotificationCompat.Builder(applicationContext, AppConfig.APP_UPDATE_CHANNEL)
             .setSmallIcon(R.drawable.ic_stat_name)
             .setContentTitle(applicationContext.getString(R.string.update_new_version_found, version))
-            .setContentText(applicationContext.getString(R.string.update_tap_to_download))
+            .setContentText("$channelLabel · ${applicationContext.getString(R.string.update_tap_to_download)}")
             .setAutoCancel(true)
             .setContentIntent(contentIntent)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
