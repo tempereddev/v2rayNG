@@ -7,14 +7,10 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.os.Build
-import android.os.Handler
 import android.os.IBinder
-import android.os.Looper
 import android.util.Log
 import androidx.core.app.NotificationCompat
-import androidx.core.content.FileProvider
 import com.v2ray.ang.AppConfig
-import com.v2ray.ang.BuildConfig
 import com.v2ray.ang.R
 import com.v2ray.ang.dto.DownloadStatus
 import com.v2ray.ang.handler.DownloadCancelledException
@@ -77,7 +73,6 @@ class DownloadApkService : Service() {
     }
 
     private val serviceScope = CoroutineScope(Dispatchers.IO + Job())
-    private val mainHandler = Handler(Looper.getMainLooper())
     private var notificationManager: NotificationManager? = null
 
     override fun onBind(intent: Intent?): IBinder? = null
@@ -146,7 +141,7 @@ class DownloadApkService : Service() {
                 if (apkFile != null && apkFile.exists()) {
                     DownloadStateManager.markCompleted(apkFile.absolutePath)
                     notificationManager?.notify(NOTIFICATION_ID, buildCompleteNotification(version, apkFile))
-                    installApk(apkFile)
+                    stopSelf()
                 } else {
                     handleFailure(getString(R.string.update_download_failed), downloadUrl, version)
                 }
@@ -183,24 +178,6 @@ class DownloadApkService : Service() {
             notificationManager?.notify(NOTIFICATION_ID, buildFailureNotification())
             stopSelf()
         }
-    }
-
-    private fun installApk(apkFile: File) {
-        try {
-            val uri = FileProvider.getUriForFile(
-                this,
-                "${BuildConfig.APPLICATION_ID}.cache",
-                apkFile
-            )
-            val intent = Intent(Intent.ACTION_VIEW).apply {
-                setDataAndType(uri, "application/vnd.android.package-archive")
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION
-            }
-            startActivity(intent)
-        } catch (e: Exception) {
-            Log.e(AppConfig.TAG, "Failed to launch installer: ${e.message}", e)
-        }
-        stopSelf()
     }
 
     private fun createNotificationChannel() {
@@ -283,29 +260,21 @@ class DownloadApkService : Service() {
     }
 
     private fun buildCompleteNotification(version: String, apkFile: File): android.app.Notification {
-        val installIntent = try {
-            val uri = FileProvider.getUriForFile(this, "${BuildConfig.APPLICATION_ID}.cache", apkFile)
-            val intent = Intent(Intent.ACTION_VIEW).apply {
-                setDataAndType(uri, "application/vnd.android.package-archive")
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION
-            }
-            PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
-        } catch (_: Exception) {
-            null
-        }
+        val openActivityIntent = PendingIntent.getActivity(
+            this, 0,
+            Intent(this, CheckUpdateActivity::class.java)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP),
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
 
-        val builder = NotificationCompat.Builder(this, AppConfig.APP_UPDATE_CHANNEL)
+        return NotificationCompat.Builder(this, AppConfig.APP_UPDATE_CHANNEL)
             .setSmallIcon(R.drawable.ic_stat_name)
             .setContentTitle(getString(R.string.update_download_complete))
-            .setContentText("v$version")
+            .setContentText("v$version · ${getString(R.string.update_tap_to_install)}")
             .setOngoing(false)
             .setAutoCancel(true)
-
-        if (installIntent != null) {
-            builder.setContentIntent(installIntent)
-        }
-
-        return builder.build()
+            .setContentIntent(openActivityIntent)
+            .build()
     }
 
     private fun buildRetryNotification(retryNum: Int): android.app.Notification {

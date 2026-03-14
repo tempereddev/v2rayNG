@@ -184,13 +184,18 @@ class CheckUpdateActivity : BaseActivity(), DownloadStateManager.DownloadStateOb
             DownloadStatus.COMPLETED -> {
                 val filePath = state.tempFilePath ?: return
                 val file = File(filePath)
-                if (file.exists()) {
-                    UpdateCheckerManager.installApk(this, file)
-                } else {
+                if (!file.exists()) {
                     toastError(R.string.update_download_failed)
                     DownloadStateManager.markIdle()
                     resetDownloadUI()
+                    return
                 }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && !packageManager.canRequestPackageInstalls()) {
+                    toast(R.string.update_install_permission_required)
+                    startActivity(Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:$packageName")))
+                    return
+                }
+                UpdateCheckerManager.installApk(this, file)
             }
 
             DownloadStatus.FAILED -> {
