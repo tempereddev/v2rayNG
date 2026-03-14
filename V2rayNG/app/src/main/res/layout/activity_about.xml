@@ -41,6 +41,31 @@
             </LinearLayout>
 
             <LinearLayout
+                android:id="@+id/layout_upstream_project"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center|start"
+                android:orientation="horizontal"
+                android:padding="@dimen/padding_spacing_dp16">
+
+                <ImageView
+                    android:layout_width="@dimen/image_size_dp24"
+                    android:layout_height="@dimen/image_size_dp24"
+                    android:importantForAccessibility="no"
+                    app:srcCompat="@drawable/ic_source_code_24dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingStart="@dimen/padding_spacing_dp16"
+                    android:text="@string/title_upstream_project"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Subhead" />
+            </LinearLayout>
+
+            <LinearLayout
                 android:id="@+id/layout_oss_licenses"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -156,9 +181,18 @@
                     android:textAppearance="@style/TextAppearance.AppCompat.Small" />
 
                 <TextView
+                    android:id="@+id/tv_upstream_version"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/padding_spacing_dp8"
+                    android:text="@string/title_about"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Small" />
+
+                <TextView
                     android:id="@+id/tv_app_id"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/padding_spacing_dp8"
                     android:text="@string/title_about"
                     android:textAppearance="@style/TextAppearance.AppCompat.Small" />
             </LinearLayout>

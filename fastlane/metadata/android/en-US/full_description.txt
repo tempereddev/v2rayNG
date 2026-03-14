@@ -1,27 +1,34 @@
-<p>A V2Ray client for Android, support <a href="https://github.com/XTLS/Xray-core">Xray core</a> and <a href="https://github.com/v2fly/v2ray-core">v2fly core</a></p>
+<p><strong>v2rayNG-Pro</strong> is a standalone Android fork of the official <a href="https://github.com/2dust/v2rayNG">v2rayNG</a> project. It supports <a href="https://github.com/XTLS/Xray-core">Xray core</a> and <a href="https://github.com/v2fly/v2ray-core">v2fly core</a> while keeping its own package name, release line, and update channel.</p>
 
-<h3>Telegram Channel</h3>
+<h3>Why this fork exists</h3>
 
-<p><a href="https://t.me/github_2dust">github_2dust</a></p>
+<ul>
+<li>installs alongside the original app instead of replacing it</li>
+<li>uses a separate Android package ID: <code>com.v2ray.ang.pro</code></li>
+<li>shows both the fork version and the upstream base version in About</li>
+<li>tracks this repository for in-app update checks</li>
+</ul>
+
+<h3>Upstream base</h3>
+
+<ul>
+<li>official upstream project: <code>2dust/v2rayNG</code></li>
+<li>base upstream version used in this fork: <code>2.0.15</code></li>
+<li>base upstream commit: <code>d3118b5</code></li>
+</ul>
 
 <h3>Usage</h3>
 
-<h4>Geoip and Geosite</h4>
-
 <ul>
-<li>geoip.dat and geosite.dat files are in <code>Android/data/com.v2ray.ang/files/assets</code> (path may differ on some Android device)</li>
-<li>download feature will get enhanced version in this <a href="https://github.com/Loyalsoldier/v2ray-rules-dat">repo</a> (Note it need a working proxy)</li>
-<li>latest official <a href="https://github.com/v2fly/domain-list-community">domain list</a> and <a href="https://github.com/v2fly/geoip">ip list</a> can be imported manually</li>
-<li>possible to use third party dat file in the same folder, like <a href="https://guide.v2fly.org/routing/sitedata.html#%E5%A4%96%E7%BD%AE%E7%9A%84%E5%9F%9F%E5%90%8D%E6%96%87%E4%BB%B6">h2y</a></li>
+<li>geoip.dat and geosite.dat files are in <code>Android/data/com.v2ray.ang.pro/files/assets</code> (path may differ on some Android device)</li>
+<li>download feature can use enhanced rules from <a href="https://github.com/Loyalsoldier/v2ray-rules-dat">Loyalsoldier/v2ray-rules-dat</a></li>
+<li>official domain and IP lists can be imported manually</li>
+<li>third-party dat files can also be placed in the same folder</li>
 </ul>
-
-<h3>More in our <a href="https://github.com/2dust/v2rayNG/wiki">wiki</a></h3>
 
 <h3>Development guide</h3>
 
-<p>Android project under V2rayNG folder can be compiled directly in Android Studio, or using Gradle wrapper. But the v2ray core inside the aar is (probably) outdated.
-The aar can be compiled from the Golang project <a href="https://github.com/2dust/AndroidLibV2rayLite">AndroidLibV2rayLite</a> or <a href="https://github.com/2dust/AndroidLibXrayLite">AndroidLibXrayLite</a>.
-For a quick start, read guide for <a href="https://github.com/golang/go/wiki/Mobile">Go Mobile</a> and <a href="https://tutorialedge.net/golang/makefiles-for-go-developers/">Makefiles for Go Developers</a></p>
+<p>The Android project under <code>V2rayNG</code> can be compiled directly in Android Studio or with the Gradle wrapper. The <code>aar</code> can be compiled from <a href="https://github.com/2dust/AndroidLibV2rayLite">AndroidLibV2rayLite</a> or <a href="https://github.com/2dust/AndroidLibXrayLite">AndroidLibXrayLite</a>.</p>
 
-<p>v2rayNG can run on Android Emulators. For WSA, VPN permission need to be granted via
+<p>For WSA, VPN permission may need:
 <code>appops set [package name] ACTIVATE_VPN allow</code></p>

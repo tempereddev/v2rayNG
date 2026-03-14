@@ -20,6 +20,10 @@ class AboutActivity : BaseActivity() {
             Utils.openUri(this, AppConfig.APP_URL)
         }
 
+        binding.layoutUpstreamProject.setOnClickListener {
+            Utils.openUri(this, AppConfig.UPSTREAM_APP_URL)
+        }
+
         binding.layoutFeedback.setOnClickListener {
             Utils.openUri(this, AppConfig.APP_ISSUES_URL)
         }
@@ -42,9 +46,21 @@ class AboutActivity : BaseActivity() {
             Utils.openUri(this, AppConfig.APP_PRIVACY_POLICY)
         }
 
-        "v${BuildConfig.VERSION_NAME} (${V2RayNativeManager.getLibVersion()})".also {
-            binding.tvVersion.text = it
-        }
-        binding.tvAppId.text = getString(R.string.about_modified_signature)
+        binding.tvVersion.text = getString(
+            R.string.about_fork_version,
+            AppConfig.FORK_DISPLAY_NAME,
+            BuildConfig.VERSION_NAME,
+            V2RayNativeManager.getLibVersion()
+        )
+        binding.tvUpstreamVersion.text = getString(
+            R.string.about_upstream_version,
+            AppConfig.UPSTREAM_VERSION_NAME,
+            AppConfig.UPSTREAM_COMMIT
+        )
+        binding.tvAppId.text = getString(
+            R.string.about_build_identity,
+            AppConfig.FORK_MAINTAINER,
+            BuildConfig.APPLICATION_ID
+        )
     }
 }

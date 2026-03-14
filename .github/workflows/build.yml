@@ -7,8 +7,13 @@ on:
         required: false
         type: string
   push:
+    branches:
+      - master
     tags:
       - '*.*.*'
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -83,6 +88,32 @@ jobs:
         distribution: 'temurin'
         java-version: '21'
 
+    - name: Resolve release tag
+      id: release_tag
+      run: |
+        if [ -n "${{ github.event.inputs.release_tag }}" ]; then
+          tag="${{ github.event.inputs.release_tag }}"
+        elif [ "${{ github.ref_type }}" = "tag" ]; then
+          tag="${{ github.ref_name }}"
+        else
+          tag="$(sed -n 's/.*versionName = "\([0-9]\+\.[0-9]\+\.[0-9]\+\)".*/\1/p' V2rayNG/app/build.gradle.kts | head -n1)"
+        fi
+        echo "value=${tag}" >> "$GITHUB_OUTPUT"
+
+    - name: Ensure release tag exists
+      if: github.ref_type != 'tag'
+      run: |
+        tag="${{ steps.release_tag.outputs.value }}"
+        if git rev-parse "${tag}" >/dev/null 2>&1; then
+          echo "Tag ${tag} already exists."
+          exit 0
+        fi
+
+        git config user.name "github-actions[bot]"
+        git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git tag -a "${tag}" -m "v2rayNG-Pro ${tag}"
+        git push origin "${tag}"
+
     - name: Decode Keystore
       uses: timheuer/base64-to-file@v1.2.4
       id: android_keystore
@@ -121,9 +152,10 @@ jobs:
 
     - name: Upload to release
       uses: svenstaro/upload-release-action@v2
-      if: github.event.inputs.release_tag != '' || github.ref_type == 'tag'
+      if: ${{ success() }}
       with:
         file: ${{ github.workspace }}/V2rayNG/app/build/outputs/apk/playstore/release/*.apk
-        tag: ${{ github.event.inputs.release_tag != '' && github.event.inputs.release_tag || github.ref_name }}
+        tag: ${{ steps.release_tag.outputs.value }}
         file_glob: true
         prerelease: false
+        overwrite: true
