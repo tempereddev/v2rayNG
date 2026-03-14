@@ -27,6 +27,7 @@ Standalone Android Xray/V2Ray client fork based on the official [v2rayNG](https:
 - Install this fork beside the original app without replacing it
 - In-app update checks target this repository's releases
 - Release artifacts are published under the `v2rayNG-Pro` release line
+- Version-by-version release notes now live in [CHANGELOG.md](CHANGELOG.md) and are reused for GitHub releases
 
 ## Automation
 

@@ -115,6 +115,13 @@ class CheckUpdateActivity : BaseActivity(), DownloadApkService.DownloadListener 
     private fun showUpdateCard(result: CheckUpdateResult) {
         binding.cardUpdateInfo.visibility = View.VISIBLE
         binding.tvUpdateVersion.text = getString(R.string.update_new_version_found, result.latestVersion)
+        binding.tvReleaseMeta.text = getString(
+            R.string.update_release_meta,
+            result.publishedAt ?: getString(R.string.update_release_meta_unknown_date),
+            result.assetCount,
+            getString(if (result.isPreRelease) R.string.update_channel_prerelease else R.string.update_channel_stable)
+        )
+        binding.tvReleaseMeta.visibility = View.VISIBLE
 
         val notes = buildReleaseNotes(result)
         if (!notes.isNullOrEmpty()) {
@@ -168,12 +175,13 @@ class CheckUpdateActivity : BaseActivity(), DownloadApkService.DownloadListener 
 
     private fun buildReleaseNotes(result: CheckUpdateResult): String {
         val baseNotes = result.releaseNotes?.trim()?.let(::stripMarkdown).orEmpty()
+        val readableNotes = baseNotes.ifBlank { getString(R.string.update_no_release_notes) }
         return if (result.downloadUrl != null) {
-            baseNotes
+            readableNotes
         } else {
             listOf(
                 getString(R.string.update_asset_pending),
-                baseNotes
+                readableNotes
             ).filter { it.isNotBlank() }.joinToString("\n\n")
         }
     }
@@ -181,6 +189,7 @@ class CheckUpdateActivity : BaseActivity(), DownloadApkService.DownloadListener 
     private fun stripMarkdown(text: String): String {
         return text.lines().joinToString("\n") { line ->
             line.replace(Regex("^#{1,6}\\s*"), "")
+                .replace(Regex("^[-*]\\s+"), "- ")
                 .replace(Regex("\\*{1,2}([^*]+)\\*{1,2}"), "$1")
                 .let { if (it.trim() == "---") "" else it }
         }.trim()

@@ -114,6 +114,13 @@ jobs:
         git tag -a "${tag}" -m "v2rayNG-Pro ${tag}"
         git push origin "${tag}"
 
+    - name: Generate release notes
+      id: release_notes
+      run: |
+        chmod +x scripts/get-release-notes.sh
+        scripts/get-release-notes.sh "${{ steps.release_tag.outputs.value }}" > /tmp/release-notes.md
+        echo "path=/tmp/release-notes.md" >> "$GITHUB_OUTPUT"
+
     - name: Decode Keystore
       uses: timheuer/base64-to-file@v1.2.4
       id: android_keystore
@@ -150,12 +157,24 @@ jobs:
         name: x86-apk
         path: ${{ github.workspace }}/V2rayNG/app/build/outputs/apk/*/release/*x86*.apk
 
-    - name: Upload to release
-      uses: svenstaro/upload-release-action@v2
+    - name: Create or update GitHub release
       if: ${{ success() }}
-      with:
-        file: ${{ github.workspace }}/V2rayNG/app/build/outputs/apk/playstore/release/*.apk
-        tag: ${{ steps.release_tag.outputs.value }}
-        file_glob: true
-        prerelease: false
-        overwrite: true
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        tag="${{ steps.release_tag.outputs.value }}"
+        title="v2rayNG-Pro ${tag}"
+        notes_file="${{ steps.release_notes.outputs.path }}"
+
+        if gh release view "${tag}" >/dev/null 2>&1; then
+          gh release edit "${tag}" --title "${title}" --notes-file "${notes_file}"
+        else
+          gh release create "${tag}" --title "${title}" --notes-file "${notes_file}"
+        fi
+
+    - name: Upload to release
+      if: ${{ success() }}
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        gh release upload "${{ steps.release_tag.outputs.value }}" ${{ github.workspace }}/V2rayNG/app/build/outputs/apk/playstore/release/*.apk --clobber

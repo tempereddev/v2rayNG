@@ -251,8 +251,10 @@
     <string name="about_fork_version" translatable="false">%1$s v%2$s\nCore: %3$s</string>
     <string name="about_upstream_version" translatable="false">Based on official v2rayNG %1$s\nUpstream commit: %2$s</string>
     <string name="about_build_identity" translatable="false">Modified by %1$s\nIndependent package: %2$s</string>
+    <string name="about_current_build_highlights">Current build highlights</string>
     <string name="title_source_code">Fork source code</string>
     <string name="title_upstream_project">Original v2rayNG project</string>
+    <string name="title_release_history">Release history</string>
     <string name="title_oss_license">Open Source licenses</string>
     <string name="title_tg_channel">Telegram channel</string>
 
@@ -464,7 +466,17 @@
     <string name="update_asset_pending">A newer version exists, but a device-matched APK is not ready yet. Open the release page to download it manually.</string>
     <string name="update_install_permission_required">Install permission required to update</string>
     <string name="update_release_notes">Release notes</string>
+    <string name="update_release_meta">Published: %1$s | Assets: %2$d | Channel: %3$s</string>
+    <string name="update_release_meta_unknown_date">unknown</string>
+    <string name="update_channel_stable">Stable</string>
+    <string name="update_channel_prerelease">Pre-release</string>
+    <string name="update_no_release_notes">This release was published without a detailed changelog.</string>
     <string name="update_later">Later</string>
+    <string name="release_section_highlights">Highlights</string>
+    <string name="release_section_user_impact">Why this build matters</string>
+    <string name="whats_new_title">What\'s new in %1$s</string>
+    <string name="whats_new_view_release">Open release page</string>
+    <string name="whats_new_close">Close</string>
     <string name="routing_mode_rule">Rule</string>
     <string name="routing_mode_global">Global</string>
     <string name="routing_mode_direct">Direct</string>

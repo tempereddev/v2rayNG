@@ -1,0 +1,61 @@
+{
+  "currentVersion": "1.0.5",
+  "releases": [
+    {
+      "version": "1.0.5",
+      "title": "Transparent release intelligence",
+      "summary": "This build makes updates easier to trust by surfacing exactly what changed inside the app and on GitHub.",
+      "highlights": [
+        "About now shows current-build highlights in addition to the fork identity, upstream base version, and upstream commit.",
+        "A one-time What's New dialog now appears after version changes so users immediately see what changed.",
+        "The update screen now shows release metadata such as publish date, asset count, and release channel.",
+        "GitHub releases can now be published with a proper notes body instead of an empty release page."
+      ],
+      "userImpact": [
+        "Users can verify whether an update is fork-specific work, upstream sync work, or both.",
+        "The installed app no longer depends on memory or guesswork to explain the current build.",
+        "GitHub release pages and in-app update prompts now tell the same story."
+      ],
+      "releaseUrl": "https://github.com/tempereddev/v2rayNG/releases/tag/1.0.5"
+    },
+    {
+      "version": "1.0.4",
+      "title": "Reliable update detection",
+      "summary": "This build improved update detection when GitHub release assets are still being attached.",
+      "highlights": [
+        "New versions are now surfaced even when a device-specific APK is not ready yet.",
+        "The update action can fall back to the release page instead of failing silently."
+      ],
+      "userImpact": [
+        "Users are less likely to miss an update because assets appeared a little later than the release itself."
+      ],
+      "releaseUrl": "https://github.com/tempereddev/v2rayNG/releases/tag/1.0.4"
+    },
+    {
+      "version": "1.0.3",
+      "title": "Fork identity and upstream visibility",
+      "summary": "This build made the relationship between the fork and the original project much clearer.",
+      "highlights": [
+        "About started showing fork version, upstream version, and upstream commit.",
+        "Upstream sync automation groundwork was added for cleaner future maintenance."
+      ],
+      "userImpact": [
+        "Users can see exactly which official base this fork was built from."
+      ],
+      "releaseUrl": "https://github.com/tempereddev/v2rayNG/releases/tag/1.0.3"
+    },
+    {
+      "version": "1.0.2",
+      "title": "Standalone fork packaging",
+      "summary": "This build introduced the independent v2rayNG-Pro app identity.",
+      "highlights": [
+        "The Android package name was separated so the fork installs alongside official v2rayNG.",
+        "Update checks and release assets were redirected to the fork repository."
+      ],
+      "userImpact": [
+        "The fork no longer replaces the official app on the same device."
+      ],
+      "releaseUrl": "https://github.com/tempereddev/v2rayNG/releases/tag/1.0.2"
+    }
+  ]
+}

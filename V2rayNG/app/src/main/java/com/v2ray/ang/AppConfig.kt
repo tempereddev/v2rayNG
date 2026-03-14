@@ -82,6 +82,7 @@ object AppConfig {
     const val PREF_AUTO_SORT_AFTER_TEST = "pref_auto_sort_after_test"
     const val PREF_ROUTING_MODE = "pref_routing_mode"
     const val PREF_LAST_UPDATE_CHECK = "pref_last_update_check"
+    const val PREF_LAST_SEEN_CHANGELOG_VERSION = "pref_last_seen_changelog_version"
 
     /** Cache keys. */
     const val CACHE_SUBSCRIPTION_ID = "cache_subscription_id"
@@ -120,6 +121,7 @@ object AppConfig {
     const val GITHUB_DOWNLOAD_URL = "$GITHUB_URL/%s/releases/latest/download"
     const val ANDROID_PACKAGE_NAME_LIST_URL = "$GITHUB_RAW_URL/2dust/androidpackagenamelist/master/proxy.txt"
     const val APP_URL = "$GITHUB_URL/tempereddev/v2rayNG"
+    const val APP_RELEASES_URL = "$APP_URL/releases"
     const val APP_API_URL = "https://api.github.com/repos/tempereddev/v2rayNG/releases"
     const val APP_ISSUES_URL = "$APP_URL/issues"
     const val APP_WIKI_MODE = "$APP_URL/wiki/Mode"

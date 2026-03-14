@@ -48,6 +48,8 @@ object UpdateCheckerManager {
                 releaseNotes = latestRelease.body,
                 downloadUrl = getDownloadUrl(latestRelease, Build.SUPPORTED_ABIS[0]),
                 releasePageUrl = latestRelease.htmlUrl,
+                publishedAt = latestRelease.publishedAt.takeIf { it.isNotBlank() }?.let(::normalizePublishedAt),
+                assetCount = latestRelease.assets.size,
                 isPreRelease = latestRelease.prerelease
             )
         } else {
@@ -172,5 +174,9 @@ object UpdateCheckerManager {
         if (universalMatch != null) return universalMatch.browserDownloadUrl
 
         return apkAssets.firstOrNull()?.browserDownloadUrl
+    }
+
+    private fun normalizePublishedAt(value: String): String {
+        return value.substringBefore('T').ifBlank { value }
     }
 }

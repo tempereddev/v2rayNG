@@ -66,6 +66,31 @@
             </LinearLayout>
 
             <LinearLayout
+                android:id="@+id/layout_release_history"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center|start"
+                android:orientation="horizontal"
+                android:padding="@dimen/padding_spacing_dp16">
+
+                <ImageView
+                    android:layout_width="@dimen/image_size_dp24"
+                    android:layout_height="@dimen/image_size_dp24"
+                    android:importantForAccessibility="no"
+                    app:srcCompat="@drawable/ic_check_update_24dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingStart="@dimen/padding_spacing_dp16"
+                    android:text="@string/title_release_history"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Subhead" />
+            </LinearLayout>
+
+            <LinearLayout
                 android:id="@+id/layout_oss_licenses"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -195,6 +220,25 @@
                     android:layout_marginTop="@dimen/padding_spacing_dp8"
                     android:text="@string/title_about"
                     android:textAppearance="@style/TextAppearance.AppCompat.Small" />
+
+                <TextView
+                    android:id="@+id/tv_current_build_highlights_label"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/padding_spacing_dp16"
+                    android:gravity="center"
+                    android:text="@string/about_current_build_highlights"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Small"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/tv_current_build_highlights"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/padding_spacing_dp8"
+                    android:gravity="center"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Small"
+                    android:visibility="gone" />
             </LinearLayout>
 
         </LinearLayout>

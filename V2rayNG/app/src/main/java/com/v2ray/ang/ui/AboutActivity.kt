@@ -5,6 +5,7 @@ import com.v2ray.ang.AppConfig
 import com.v2ray.ang.BuildConfig
 import com.v2ray.ang.R
 import com.v2ray.ang.databinding.ActivityAboutBinding
+import com.v2ray.ang.handler.ForkReleaseNotesManager
 import com.v2ray.ang.handler.V2RayNativeManager
 import com.v2ray.ang.util.Utils
 
@@ -22,6 +23,10 @@ class AboutActivity : BaseActivity() {
 
         binding.layoutUpstreamProject.setOnClickListener {
             Utils.openUri(this, AppConfig.UPSTREAM_APP_URL)
+        }
+
+        binding.layoutReleaseHistory.setOnClickListener {
+            Utils.openUri(this, AppConfig.APP_RELEASES_URL)
         }
 
         binding.layoutFeedback.setOnClickListener {
@@ -62,5 +67,16 @@ class AboutActivity : BaseActivity() {
             AppConfig.FORK_MAINTAINER,
             BuildConfig.APPLICATION_ID
         )
+
+        val currentRelease = ForkReleaseNotesManager.getCurrentRelease(this)
+        val highlightsText = currentRelease?.let { ForkReleaseNotesManager.formatForDisplay(this, it) }.orEmpty()
+        if (highlightsText.isNotBlank()) {
+            binding.tvCurrentBuildHighlightsLabel.visibility = android.view.View.VISIBLE
+            binding.tvCurrentBuildHighlights.visibility = android.view.View.VISIBLE
+            binding.tvCurrentBuildHighlights.text = highlightsText
+        } else {
+            binding.tvCurrentBuildHighlightsLabel.visibility = android.view.View.GONE
+            binding.tvCurrentBuildHighlights.visibility = android.view.View.GONE
+        }
     }
 }
