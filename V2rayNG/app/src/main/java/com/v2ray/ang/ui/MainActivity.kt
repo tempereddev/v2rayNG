@@ -46,7 +46,11 @@ import com.v2ray.ang.handler.MmkvManager
 import com.v2ray.ang.handler.SettingsChangeManager
 import com.v2ray.ang.handler.SettingsManager
 import com.v2ray.ang.handler.UpdateCheckerManager
+import com.v2ray.ang.handler.DownloadStateManager
 import com.v2ray.ang.handler.V2RayServiceManager
+import com.v2ray.ang.dto.DownloadState
+import com.v2ray.ang.dto.DownloadStatus
+import com.v2ray.ang.service.DownloadApkService
 import com.v2ray.ang.util.MessageUtil
 import com.v2ray.ang.util.Utils
 import com.v2ray.ang.viewmodel.MainViewModel
@@ -55,7 +59,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelectedListener {
+class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelectedListener, DownloadStateManager.DownloadStateObserver {
     private enum class RoutingMode(
         val prefValue: String,
         val buttonId: Int,
@@ -397,15 +401,22 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
 
     override fun onResume() {
         super.onResume()
+        DownloadStateManager.addObserver(this)
         if (!hasCheckedWhatsNewThisSession) {
             hasCheckedWhatsNewThisSession = true
             maybeShowWhatsNewDialog()
         }
         checkForAppUpdate()
+        updateBannerFromState(DownloadStateManager.getState())
     }
 
     override fun onPause() {
+        DownloadStateManager.removeObserver(this)
         super.onPause()
+    }
+
+    override fun onDownloadStateChanged(state: DownloadState) {
+        updateBannerFromState(state)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -808,7 +819,19 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
     }
 
     private fun checkForAppUpdate() {
+        // If there's already an active download state, just show the banner
+        val currentState = DownloadStateManager.getState()
+        if (currentState.status != DownloadStatus.IDLE) {
+            updateBannerFromState(currentState)
+            return
+        }
+
         if (!UpdateCheckerManager.shouldAutoCheck()) {
+            // Check if there's a cached update result to show
+            val cached = UpdateCheckerManager.getCachedUpdateResult()
+            if (cached != null && cached.hasUpdate) {
+                updateBannerFromState(currentState)
+            }
             return
         }
 
@@ -816,23 +839,107 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
             try {
                 val result = UpdateCheckerManager.checkForUpdate(false)
                 UpdateCheckerManager.markUpdateChecked()
+                if (result.hasUpdate) {
+                    UpdateCheckerManager.cacheUpdateResult(result)
+                }
                 withContext(Dispatchers.Main) {
-                    showUpdateBanner(result.latestVersion.takeIf { result.hasUpdate })
+                    updateBannerFromState(DownloadStateManager.getState())
                 }
             } catch (_: Exception) {
             }
         }
     }
 
-    private fun showUpdateBanner(latestVersion: String?) {
-        if (latestVersion != null) {
-            binding.layoutUpdateBanner.isVisible = true
-            binding.tvUpdateBannerText.text = getString(R.string.update_banner_text, latestVersion)
-            binding.layoutUpdateBanner.setOnClickListener {
-                startActivity(Intent(this, CheckUpdateActivity::class.java))
+    private fun updateBannerFromState(state: DownloadState) {
+        val cachedResult = UpdateCheckerManager.getCachedUpdateResult()
+
+        when (state.status) {
+            DownloadStatus.IDLE -> {
+                if (cachedResult != null && cachedResult.hasUpdate) {
+                    binding.layoutUpdateBanner.isVisible = true
+                    binding.tvUpdateBannerText.text = getString(R.string.update_banner_text, cachedResult.latestVersion)
+                    binding.tvUpdateBannerAction.text = getString(R.string.update_tap_to_download)
+                    binding.tvUpdateBannerAction.isVisible = true
+                    binding.progressUpdateBanner.isVisible = false
+                    binding.layoutUpdateBanner.setOnClickListener {
+                        val url = cachedResult.downloadUrl
+                        val version = cachedResult.latestVersion
+                        if (url != null && version != null) {
+                            DownloadApkService.start(this, url, version)
+                        } else {
+                            startActivity(Intent(this, CheckUpdateActivity::class.java))
+                        }
+                    }
+                } else {
+                    binding.layoutUpdateBanner.isVisible = false
+                }
             }
-        } else {
-            binding.layoutUpdateBanner.isVisible = false
+
+            DownloadStatus.CHECKING -> {
+                binding.layoutUpdateBanner.isVisible = true
+                binding.tvUpdateBannerText.text = getString(R.string.update_checking_for_update)
+                binding.tvUpdateBannerAction.isVisible = false
+                binding.progressUpdateBanner.isVisible = false
+                binding.layoutUpdateBanner.setOnClickListener(null)
+            }
+
+            DownloadStatus.DOWNLOADING -> {
+                val percent = if (state.totalBytes > 0) ((state.downloadedBytes * 100) / state.totalBytes).toInt() else 0
+                binding.layoutUpdateBanner.isVisible = true
+                binding.tvUpdateBannerText.text = getString(R.string.update_banner_downloading, state.version ?: "", percent)
+                val speed = DownloadStateManager.formatSpeed(state.speedBytesPerSec)
+                val eta = DownloadStateManager.formatEta(state.etaSeconds)
+                binding.tvUpdateBannerAction.isVisible = speed.isNotEmpty()
+                binding.tvUpdateBannerAction.text = if (eta.isNotEmpty()) "$speed  ~$eta" else speed
+                binding.progressUpdateBanner.isVisible = true
+                binding.progressUpdateBanner.progress = percent
+                binding.layoutUpdateBanner.setOnClickListener {
+                    startActivity(Intent(this, CheckUpdateActivity::class.java))
+                }
+            }
+
+            DownloadStatus.PAUSED -> {
+                val percent = if (state.totalBytes > 0) ((state.downloadedBytes * 100) / state.totalBytes).toInt() else 0
+                binding.layoutUpdateBanner.isVisible = true
+                binding.tvUpdateBannerText.text = getString(R.string.update_banner_paused, percent)
+                binding.tvUpdateBannerAction.text = getString(R.string.update_tap_to_resume)
+                binding.tvUpdateBannerAction.isVisible = true
+                binding.progressUpdateBanner.isVisible = true
+                binding.progressUpdateBanner.progress = percent
+                binding.layoutUpdateBanner.setOnClickListener {
+                    val url = state.downloadUrl ?: return@setOnClickListener
+                    val version = state.version ?: return@setOnClickListener
+                    DownloadApkService.startResume(this, url, version)
+                }
+            }
+
+            DownloadStatus.COMPLETED -> {
+                binding.layoutUpdateBanner.isVisible = true
+                binding.tvUpdateBannerText.text = getString(R.string.update_banner_completed, state.version ?: "")
+                binding.tvUpdateBannerAction.text = getString(R.string.update_tap_to_install)
+                binding.tvUpdateBannerAction.isVisible = true
+                binding.progressUpdateBanner.isVisible = false
+                binding.layoutUpdateBanner.setOnClickListener {
+                    val filePath = state.tempFilePath ?: return@setOnClickListener
+                    val file = java.io.File(filePath)
+                    if (file.exists()) {
+                        UpdateCheckerManager.installApk(this, file)
+                    }
+                }
+            }
+
+            DownloadStatus.FAILED -> {
+                binding.layoutUpdateBanner.isVisible = true
+                binding.tvUpdateBannerText.text = getString(R.string.update_banner_failed)
+                binding.tvUpdateBannerAction.text = getString(R.string.update_action_retry)
+                binding.tvUpdateBannerAction.isVisible = true
+                binding.progressUpdateBanner.isVisible = false
+                binding.layoutUpdateBanner.setOnClickListener {
+                    val url = state.downloadUrl ?: return@setOnClickListener
+                    val version = state.version ?: return@setOnClickListener
+                    DownloadApkService.start(this, url, version)
+                }
+            }
         }
     }
 

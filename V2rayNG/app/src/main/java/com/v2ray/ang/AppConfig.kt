@@ -83,6 +83,8 @@ object AppConfig {
     const val PREF_ROUTING_MODE = "pref_routing_mode"
     const val PREF_LAST_UPDATE_CHECK = "pref_last_update_check"
     const val PREF_LAST_SEEN_CHANGELOG_VERSION = "pref_last_seen_changelog_version"
+    const val PREF_DOWNLOAD_STATE = "pref_download_state"
+    const val PREF_CACHED_UPDATE_RESULT = "pref_cached_update_result"
 
     /** Cache keys. */
     const val CACHE_SUBSCRIPTION_ID = "cache_subscription_id"
@@ -94,6 +96,17 @@ object AppConfig {
     const val BROADCAST_ACTION_SERVICE = "$ANG_PACKAGE.action.service"
     const val BROADCAST_ACTION_ACTIVITY = "$ANG_PACKAGE.action.activity"
     const val BROADCAST_ACTION_WIDGET_CLICK = "$ANG_PACKAGE.action.widget.click"
+
+    /** Download actions. */
+    const val ACTION_PAUSE_DOWNLOAD = "$ANG_PACKAGE.action.PAUSE_DOWNLOAD"
+    const val ACTION_RESUME_DOWNLOAD = "$ANG_PACKAGE.action.RESUME_DOWNLOAD"
+    const val ACTION_CANCEL_DOWNLOAD = "$ANG_PACKAGE.action.CANCEL_DOWNLOAD"
+    const val ACTION_RETRY_DOWNLOAD = "$ANG_PACKAGE.action.RETRY_DOWNLOAD"
+    const val ACTION_INSTALL_UPDATE = "$ANG_PACKAGE.action.INSTALL_UPDATE"
+
+    /** Download configuration. */
+    const val DOWNLOAD_MAX_RETRIES = 3
+    const val DOWNLOAD_RETRY_BASE_DELAY_MS = 2000L
 
     /** Tasker extras. */
     const val TASKER_EXTRA_BUNDLE = "com.twofortyfouram.locale.intent.extra.BUNDLE"

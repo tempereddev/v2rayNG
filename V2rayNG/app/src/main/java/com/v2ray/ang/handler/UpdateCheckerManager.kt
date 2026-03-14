@@ -18,7 +18,22 @@ import java.io.File
 import java.io.FileOutputStream
 import java.net.HttpURLConnection
 
+class DownloadPausedException : Exception("Download paused")
+class DownloadCancelledException : Exception("Download cancelled")
+
 object UpdateCheckerManager {
+
+    @Volatile
+    var isPaused = false
+
+    @Volatile
+    var isCancelled = false
+
+    fun resetFlags() {
+        isPaused = false
+        isCancelled = false
+    }
+
     suspend fun checkForUpdate(includePreRelease: Boolean = false): CheckUpdateResult = withContext(Dispatchers.IO) {
         val url = if (includePreRelease) {
             AppConfig.APP_API_URL
@@ -60,12 +75,14 @@ object UpdateCheckerManager {
     suspend fun downloadApk(
         context: Context,
         downloadUrl: String,
+        startByte: Long = 0,
+        tempFile: File? = null,
         onProgress: (percent: Int, downloaded: Long, total: Long) -> Unit = { _, _, _ -> }
     ): File? = withContext(Dispatchers.IO) {
         val httpPort = SettingsManager.getHttpPort()
         val ports = if (httpPort > 0) listOf(httpPort, 0) else listOf(0)
         for (port in ports) {
-            val result = downloadApkWithPort(context, downloadUrl, port, onProgress)
+            val result = downloadApkWithPort(context, downloadUrl, port, startByte, tempFile, onProgress)
             if (result != null) return@withContext result
         }
         null
@@ -75,36 +92,51 @@ object UpdateCheckerManager {
         context: Context,
         downloadUrl: String,
         httpPort: Int,
+        startByte: Long,
+        tempFile: File?,
         onProgress: (percent: Int, downloaded: Long, total: Long) -> Unit
     ): File? {
         var connection: HttpURLConnection? = null
         return try {
             connection = HttpUtil.createProxyConnection(downloadUrl, httpPort, 15000, 30000, true) ?: return null
             connection.instanceFollowRedirects = true
+
+            if (startByte > 0) {
+                connection.setRequestProperty("Range", "bytes=$startByte-")
+            }
+
             connection.connect()
 
             val responseCode = connection.responseCode
-            if (responseCode != HttpURLConnection.HTTP_OK) {
+
+            if (responseCode != HttpURLConnection.HTTP_OK && responseCode != HttpURLConnection.HTTP_PARTIAL) {
                 if (responseCode in 300..399) {
                     val redirectUrl = HttpUtil.resolveLocation(connection)
                     connection.disconnect()
                     connection = null
                     if (redirectUrl != null) {
-                        return downloadApkWithPort(context, redirectUrl, httpPort, onProgress)
+                        return downloadApkWithPort(context, redirectUrl, httpPort, startByte, tempFile, onProgress)
                     }
                 }
                 throw IllegalStateException("HTTP $responseCode")
             }
 
-            val totalBytes = connection.contentLengthLong.takeIf { it > 0 } ?: -1L
-            val apkFile = File(context.cacheDir, "update.apk")
-            FileOutputStream(apkFile).use { outputStream ->
+            val isResumed = responseCode == HttpURLConnection.HTTP_PARTIAL && startByte > 0
+            val contentLength = connection.contentLengthLong.takeIf { it > 0 } ?: -1L
+            val totalBytes = if (isResumed) contentLength + startByte else contentLength
+            val effectiveStartByte = if (isResumed) startByte else 0L
+
+            val apkFile = tempFile ?: File(context.cacheDir, "update.apk")
+            FileOutputStream(apkFile, isResumed).use { outputStream ->
                 connection.inputStream.use { inputStream ->
                     val buffer = ByteArray(8192)
                     var bytesRead: Int
-                    var downloaded = 0L
+                    var downloaded = effectiveStartByte
                     var lastPercent = -1
                     while (inputStream.read(buffer).also { bytesRead = it } != -1) {
+                        if (isCancelled) throw DownloadCancelledException()
+                        if (isPaused) throw DownloadPausedException()
+
                         outputStream.write(buffer, 0, bytesRead)
                         downloaded += bytesRead
                         if (totalBytes > 0) {
@@ -121,6 +153,10 @@ object UpdateCheckerManager {
                 }
             }
             apkFile
+        } catch (e: DownloadPausedException) {
+            throw e
+        } catch (e: DownloadCancelledException) {
+            throw e
         } catch (e: Exception) {
             Log.e(AppConfig.TAG, "Failed to download APK (port=$httpPort): ${e.message}")
             null
@@ -161,6 +197,23 @@ object UpdateCheckerManager {
             if (num1 != num2) return num1 - num2
         }
         return 0
+    }
+
+    fun cacheUpdateResult(result: CheckUpdateResult) {
+        MmkvManager.encodeSettings(AppConfig.PREF_CACHED_UPDATE_RESULT, JsonUtil.toJson(result))
+    }
+
+    fun getCachedUpdateResult(): CheckUpdateResult? {
+        val json = MmkvManager.decodeSettingsString(AppConfig.PREF_CACHED_UPDATE_RESULT) ?: return null
+        return try {
+            JsonUtil.fromJson(json, CheckUpdateResult::class.java)
+        } catch (_: Exception) {
+            null
+        }
+    }
+
+    fun clearCachedUpdateResult() {
+        MmkvManager.encodeSettings(AppConfig.PREF_CACHED_UPDATE_RESULT, "")
     }
 
     private fun getDownloadUrl(release: GitHubRelease, abi: String): String? {

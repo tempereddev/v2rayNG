@@ -13,27 +13,31 @@ import com.v2ray.ang.BuildConfig
 import com.v2ray.ang.R
 import com.v2ray.ang.databinding.ActivityCheckUpdateBinding
 import com.v2ray.ang.dto.CheckUpdateResult
+import com.v2ray.ang.dto.DownloadState
+import com.v2ray.ang.dto.DownloadStatus
 import com.v2ray.ang.extension.toast
 import com.v2ray.ang.extension.toastError
 import com.v2ray.ang.extension.toastSuccess
+import com.v2ray.ang.handler.DownloadStateManager
 import com.v2ray.ang.handler.MmkvManager
 import com.v2ray.ang.handler.UpdateCheckerManager
 import com.v2ray.ang.handler.V2RayNativeManager
 import com.v2ray.ang.service.DownloadApkService
 import com.v2ray.ang.util.Utils
 import kotlinx.coroutines.launch
+import java.io.File
 
-class CheckUpdateActivity : BaseActivity(), DownloadApkService.DownloadListener {
+class CheckUpdateActivity : BaseActivity(), DownloadStateManager.DownloadStateObserver {
     private val binding by lazy { ActivityCheckUpdateBinding.inflate(layoutInflater) }
     private var currentResult: CheckUpdateResult? = null
-    private var isDownloading = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentViewWithToolbar(binding.root, showHomeAsUp = true, title = getString(R.string.update_check_for_update))
 
         binding.layoutCheckUpdate.setOnClickListener {
-            if (!isDownloading) {
+            val state = DownloadStateManager.getState()
+            if (state.status != DownloadStatus.DOWNLOADING) {
                 checkForUpdates(binding.checkPreRelease.isChecked)
             }
         }
@@ -42,51 +46,161 @@ class CheckUpdateActivity : BaseActivity(), DownloadApkService.DownloadListener 
             MmkvManager.encodeSettings(AppConfig.PREF_CHECK_UPDATE_PRE_RELEASE, isChecked)
         }
         binding.checkPreRelease.isChecked = MmkvManager.decodeSettingsBool(AppConfig.PREF_CHECK_UPDATE_PRE_RELEASE, false)
-        binding.btnDownload.setOnClickListener { startDownloadAndInstall() }
+        binding.btnDownload.setOnClickListener { onDownloadButtonClicked() }
         binding.btnLater.setOnClickListener { finish() }
+        binding.btnPause.setOnClickListener { DownloadApkService.pause() }
+        binding.btnCancel.setOnClickListener {
+            DownloadApkService.cancel(this)
+            DownloadStateManager.markIdle()
+            resetDownloadUI()
+        }
 
         "v${BuildConfig.VERSION_NAME} (${V2RayNativeManager.getLibVersion()})".also {
             binding.tvVersion.text = it
         }
 
-        checkForUpdates(binding.checkPreRelease.isChecked)
+        // Check for existing download state first
+        val state = DownloadStateManager.getState()
+        if (state.status != DownloadStatus.IDLE) {
+            // Restore cached update result
+            currentResult = UpdateCheckerManager.getCachedUpdateResult()
+            if (currentResult != null) {
+                showUpdateCard(currentResult!!)
+            }
+            updateUIFromState(state)
+        } else {
+            checkForUpdates(binding.checkPreRelease.isChecked)
+        }
     }
 
     override fun onResume() {
         super.onResume()
-        DownloadApkService.listener = this
-        if (!isDownloading && currentResult != null) {
-            binding.btnDownload.isEnabled = true
-            binding.btnDownload.text = getString(R.string.update_download_and_install)
+        DownloadStateManager.addObserver(this)
+        val state = DownloadStateManager.getState()
+        if (state.status != DownloadStatus.IDLE) {
+            updateUIFromState(state)
         }
     }
 
     override fun onPause() {
+        DownloadStateManager.removeObserver(this)
         super.onPause()
-        if (DownloadApkService.listener === this) {
-            DownloadApkService.listener = null
+    }
+
+    override fun onDownloadStateChanged(state: DownloadState) {
+        updateUIFromState(state)
+    }
+
+    private fun updateUIFromState(state: DownloadState) {
+        when (state.status) {
+            DownloadStatus.IDLE -> resetDownloadUI()
+
+            DownloadStatus.CHECKING -> {
+                // Do nothing, regular check UI handles this
+            }
+
+            DownloadStatus.DOWNLOADING -> {
+                val percent = if (state.totalBytes > 0) ((state.downloadedBytes * 100) / state.totalBytes).toInt() else 0
+                binding.progressDownload.visibility = View.VISIBLE
+                binding.progressDownload.progress = percent
+                binding.tvDownloadStatus.visibility = View.VISIBLE
+
+                val speed = DownloadStateManager.formatSpeed(state.speedBytesPerSec)
+                val eta = DownloadStateManager.formatEta(state.etaSeconds)
+                val statusText = buildString {
+                    append(getString(R.string.update_download_progress, percent))
+                    if (speed.isNotEmpty()) append("  $speed")
+                    if (eta.isNotEmpty()) append("  ~$eta")
+                }
+                binding.tvDownloadStatus.text = statusText
+
+                binding.btnDownload.isEnabled = false
+                binding.btnDownload.text = getString(R.string.update_downloading)
+                binding.btnPause.visibility = View.VISIBLE
+                binding.btnCancel.visibility = View.VISIBLE
+                binding.btnLater.visibility = View.GONE
+            }
+
+            DownloadStatus.PAUSED -> {
+                val percent = if (state.totalBytes > 0) ((state.downloadedBytes * 100) / state.totalBytes).toInt() else 0
+                binding.progressDownload.visibility = View.VISIBLE
+                binding.progressDownload.progress = percent
+                binding.tvDownloadStatus.visibility = View.VISIBLE
+                binding.tvDownloadStatus.text = getString(R.string.update_paused)
+
+                binding.btnDownload.isEnabled = true
+                binding.btnDownload.text = getString(R.string.update_action_resume)
+                binding.btnPause.visibility = View.GONE
+                binding.btnCancel.visibility = View.VISIBLE
+                binding.btnLater.visibility = View.GONE
+            }
+
+            DownloadStatus.COMPLETED -> {
+                binding.progressDownload.visibility = View.VISIBLE
+                binding.progressDownload.progress = 100
+                binding.tvDownloadStatus.visibility = View.VISIBLE
+                binding.tvDownloadStatus.text = getString(R.string.update_download_complete)
+
+                binding.btnDownload.isEnabled = true
+                binding.btnDownload.text = getString(R.string.update_action_install)
+                binding.btnPause.visibility = View.GONE
+                binding.btnCancel.visibility = View.GONE
+                binding.btnLater.visibility = View.VISIBLE
+            }
+
+            DownloadStatus.FAILED -> {
+                binding.progressDownload.visibility = View.GONE
+                binding.tvDownloadStatus.visibility = View.VISIBLE
+                binding.tvDownloadStatus.text = state.errorMessage ?: getString(R.string.update_download_failed)
+
+                binding.btnDownload.isEnabled = true
+                binding.btnDownload.text = getString(R.string.update_action_retry)
+                binding.btnPause.visibility = View.GONE
+                binding.btnCancel.visibility = View.GONE
+                binding.btnLater.visibility = View.VISIBLE
+            }
         }
     }
 
-    override fun onProgress(percent: Int, downloaded: Long, total: Long) {
-        binding.progressDownload.progress = percent
-        binding.tvDownloadStatus.text = getString(R.string.update_download_progress, percent)
-    }
-
-    override fun onComplete(apkPath: String) {
-        binding.progressDownload.progress = 100
-        binding.tvDownloadStatus.text = getString(R.string.update_download_complete)
-        binding.btnDownload.text = getString(R.string.update_installing)
-        isDownloading = false
-    }
-
-    override fun onFailed(error: String) {
-        toastError(error)
-        binding.btnDownload.isEnabled = true
-        binding.btnDownload.text = getString(R.string.update_download_and_install)
+    private fun resetDownloadUI() {
         binding.progressDownload.visibility = View.GONE
         binding.tvDownloadStatus.visibility = View.GONE
-        isDownloading = false
+        binding.btnPause.visibility = View.GONE
+        binding.btnCancel.visibility = View.GONE
+        binding.btnLater.visibility = View.VISIBLE
+        binding.btnDownload.isEnabled = true
+        binding.btnDownload.text = getString(R.string.update_download_and_install)
+    }
+
+    private fun onDownloadButtonClicked() {
+        val state = DownloadStateManager.getState()
+        when (state.status) {
+            DownloadStatus.PAUSED -> {
+                val url = state.downloadUrl ?: return
+                val version = state.version ?: return
+                DownloadApkService.startResume(this, url, version)
+            }
+
+            DownloadStatus.COMPLETED -> {
+                val filePath = state.tempFilePath ?: return
+                val file = File(filePath)
+                if (file.exists()) {
+                    UpdateCheckerManager.installApk(this, file)
+                } else {
+                    toastError(R.string.update_download_failed)
+                    DownloadStateManager.markIdle()
+                    resetDownloadUI()
+                }
+            }
+
+            DownloadStatus.FAILED -> {
+                val url = state.downloadUrl ?: currentResult?.downloadUrl ?: return
+                val version = state.version ?: currentResult?.latestVersion ?: return
+                DownloadApkService.start(this, url, version)
+            }
+
+            else -> startDownloadAndInstall()
+        }
     }
 
     private fun checkForUpdates(includePreRelease: Boolean) {
@@ -100,6 +214,7 @@ class CheckUpdateActivity : BaseActivity(), DownloadApkService.DownloadListener 
                 UpdateCheckerManager.markUpdateChecked()
                 if (result.hasUpdate) {
                     currentResult = result
+                    UpdateCheckerManager.cacheUpdateResult(result)
                     showUpdateCard(result)
                 } else {
                     toastSuccess(R.string.update_already_latest_version)
@@ -134,8 +249,6 @@ class CheckUpdateActivity : BaseActivity(), DownloadApkService.DownloadListener 
             binding.tvReleaseNotes.visibility = View.GONE
         }
 
-        binding.progressDownload.visibility = View.GONE
-        binding.tvDownloadStatus.visibility = View.GONE
         binding.layoutButtons.visibility = View.VISIBLE
         binding.btnDownload.isEnabled = true
         binding.btnDownload.text = getString(
@@ -162,14 +275,6 @@ class CheckUpdateActivity : BaseActivity(), DownloadApkService.DownloadListener 
             startActivity(Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:$packageName")))
             return
         }
-
-        isDownloading = true
-        binding.btnDownload.isEnabled = false
-        binding.btnDownload.text = getString(R.string.update_downloading)
-        binding.progressDownload.visibility = View.VISIBLE
-        binding.progressDownload.progress = 0
-        binding.tvDownloadStatus.visibility = View.VISIBLE
-        binding.tvDownloadStatus.text = getString(R.string.update_download_progress, 0)
 
         DownloadApkService.start(this, downloadUrl, result.latestVersion ?: "unknown")
     }

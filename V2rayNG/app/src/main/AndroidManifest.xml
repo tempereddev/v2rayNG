@@ -216,6 +216,10 @@
             </intent-filter>
         </receiver>
 
+        <receiver
+            android:name=".receiver.DownloadActionReceiver"
+            android:exported="false" />
+
         <service
             android:name=".service.QSTileService"
             android:exported="true"
