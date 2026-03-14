@@ -31,7 +31,6 @@ import com.v2ray.ang.AppConfig
 import com.v2ray.ang.BuildConfig
 import com.v2ray.ang.R
 import com.v2ray.ang.databinding.ActivityMainBinding
-import com.v2ray.ang.databinding.DialogWhatsNewBinding
 import com.v2ray.ang.databinding.DialogImportSubscriptionBinding
 import com.v2ray.ang.dto.SubscriptionItem
 import com.v2ray.ang.dto.TestServiceMessage
@@ -41,7 +40,6 @@ import com.v2ray.ang.enums.RoutingType
 import com.v2ray.ang.extension.toast
 import com.v2ray.ang.extension.toastError
 import com.v2ray.ang.handler.AngConfigManager
-import com.v2ray.ang.handler.ForkReleaseNotesManager
 import com.v2ray.ang.handler.MmkvManager
 import com.v2ray.ang.handler.SettingsChangeManager
 import com.v2ray.ang.handler.SettingsManager
@@ -79,7 +77,6 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
     private val binding by lazy { ActivityMainBinding.inflate(layoutInflater) }
 
     private var isQuickTestRunning = false
-    private var hasCheckedWhatsNewThisSession = false
     val mainViewModel: MainViewModel by viewModels()
     private lateinit var groupPagerAdapter: GroupPagerAdapter
     private var tabMediator: TabLayoutMediator? = null
@@ -402,10 +399,6 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
     override fun onResume() {
         super.onResume()
         DownloadStateManager.addObserver(this)
-        if (!hasCheckedWhatsNewThisSession) {
-            hasCheckedWhatsNewThisSession = true
-            maybeShowWhatsNewDialog()
-        }
         checkForAppUpdate()
         updateBannerFromState(DownloadStateManager.getState())
     }
@@ -941,42 +934,6 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
                 }
             }
         }
-    }
-
-    private fun maybeShowWhatsNewDialog() {
-        val currentVersion = BuildConfig.VERSION_NAME
-        val lastSeenVersion = MmkvManager.decodeSettingsString(AppConfig.PREF_LAST_SEEN_CHANGELOG_VERSION)
-        if (lastSeenVersion == currentVersion) {
-            return
-        }
-
-        val currentRelease = ForkReleaseNotesManager.getCurrentRelease(this)
-        if (currentRelease == null) {
-            MmkvManager.encodeSettings(AppConfig.PREF_LAST_SEEN_CHANGELOG_VERSION, currentVersion)
-            return
-        }
-
-        val message = ForkReleaseNotesManager.formatForDisplay(this, currentRelease)
-        if (message.isBlank()) {
-            MmkvManager.encodeSettings(AppConfig.PREF_LAST_SEEN_CHANGELOG_VERSION, currentVersion)
-            return
-        }
-
-        val dialogBinding = DialogWhatsNewBinding.inflate(layoutInflater)
-        dialogBinding.tvWhatsNewTitle.text = getString(R.string.whats_new_title, currentRelease.version)
-        dialogBinding.tvWhatsNewSummary.text = currentRelease.summary.trim()
-        dialogBinding.tvWhatsNewHighlights.text = ForkReleaseNotesManager.formatForDialog(currentRelease)
-
-        MaterialAlertDialogBuilder(this)
-            .setView(dialogBinding.root)
-            .setPositiveButton(R.string.whats_new_view_release) { _, _ ->
-                Utils.openUri(this, ForkReleaseNotesManager.getReleaseUrl(currentRelease))
-            }
-            .setNegativeButton(R.string.whats_new_close, null)
-            .setOnDismissListener {
-                MmkvManager.encodeSettings(AppConfig.PREF_LAST_SEEN_CHANGELOG_VERSION, currentVersion)
-            }
-            .show()
     }
 
     private fun showAddConfigSheet(anchor: View) {

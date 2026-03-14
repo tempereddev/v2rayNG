@@ -3,7 +3,7 @@ package com.v2ray.ang
 
 object AppConfig {
     const val FORK_DISPLAY_NAME = "v2rayNG-Pro"
-    const val FORK_MAINTAINER = "Maziyar"
+    const val FORK_MAINTAINER = "tempereddev"
     const val UPSTREAM_REPOSITORY = "2dust/v2rayNG"
     const val UPSTREAM_APP_URL = "https://github.com/$UPSTREAM_REPOSITORY"
     const val UPSTREAM_VERSION_NAME = "2.0.15"

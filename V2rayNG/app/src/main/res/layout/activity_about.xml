@@ -11,9 +11,52 @@
 
         <LinearLayout
             android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:paddingTop="24dp"
+            android:paddingBottom="16dp">
+
+            <TextView
+                android:id="@+id/tv_app_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="@style/TextAppearance.AppCompat.Title"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tv_version"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:alpha="0.8"
+                android:textAppearance="@style/TextAppearance.AppCompat.Small"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/tv_upstream_version"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:alpha="0.6"
+                android:textAppearance="@style/TextAppearance.AppCompat.Small"
+                android:textSize="13sp" />
+
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:alpha="0.12"
+            android:background="?android:attr/textColorPrimary" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:gravity="top"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:paddingTop="8dp">
 
             <LinearLayout
                 android:id="@+id/layout_soure_ccode"
@@ -140,7 +183,6 @@
                     android:textAppearance="@style/TextAppearance.AppCompat.Subhead" />
             </LinearLayout>
 
-
             <LinearLayout
                 android:id="@+id/layout_tg_channel"
                 android:layout_width="match_parent"
@@ -191,43 +233,8 @@
                     android:textAppearance="@style/TextAppearance.AppCompat.Subhead" />
             </LinearLayout>
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="vertical"
-                android:padding="@dimen/padding_spacing_dp16">
-
-                <TextView
-                    android:id="@+id/tv_version"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/title_about"
-                    android:textAppearance="@style/TextAppearance.AppCompat.Small"
-                    android:textSize="15sp" />
-
-                <TextView
-                    android:id="@+id/tv_upstream_version"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/padding_spacing_dp8"
-                    android:text="@string/title_about"
-                    android:textAppearance="@style/TextAppearance.AppCompat.Small"
-                    android:textSize="14sp" />
-
-                <TextView
-                    android:id="@+id/tv_app_id"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/padding_spacing_dp8"
-                    android:text="@string/title_about"
-                    android:textAppearance="@style/TextAppearance.AppCompat.Small"
-                    android:textSize="13sp" />
-            </LinearLayout>
-
         </LinearLayout>
 
     </LinearLayout>
 
 </ScrollView>
-

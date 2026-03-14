@@ -1,6 +1,21 @@
 {
-  "currentVersion": "1.0.7",
+  "currentVersion": "1.0.8",
   "releases": [
+    {
+      "version": "1.0.8",
+      "title": "Advanced update system",
+      "summary": "Complete overhaul of the in-app update system with professional download management.",
+      "highlights": [
+        "Resumable downloads that survive app restarts and network interruptions.",
+        "Pause, resume, and cancel downloads from the notification or the app.",
+        "Smart main screen banner showing real-time download progress.",
+        "Auto-retry on failure with network-aware pause and resume."
+      ],
+      "userImpact": [
+        "Downloading updates is now reliable even on unstable connections."
+      ],
+      "releaseUrl": "https://github.com/tempereddev/v2rayNG/releases/tag/1.0.8"
+    },
     {
       "version": "1.0.7",
       "title": "Minimal UI polish",

@@ -1,7 +1,6 @@
 package com.v2ray.ang.ui
 
 import android.os.Bundle
-import androidx.core.content.ContextCompat
 import com.v2ray.ang.AppConfig
 import com.v2ray.ang.BuildConfig
 import com.v2ray.ang.R
@@ -14,7 +13,6 @@ class AboutActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        //setContentView(binding.root)
         setContentViewWithToolbar(binding.root, showHomeAsUp = true, title = getString(R.string.title_about))
 
         binding.layoutSoureCcode.setOnClickListener {
@@ -37,9 +35,9 @@ class AboutActivity : BaseActivity() {
             val webView = android.webkit.WebView(this)
             webView.loadUrl("file:///android_asset/open_source_licenses.html")
             android.app.AlertDialog.Builder(this)
-                .setTitle("Open source licenses")
+                .setTitle(R.string.title_oss_license)
                 .setView(webView)
-                .setPositiveButton("OK") { dialog, _ -> dialog.dismiss() }
+                .setPositiveButton(android.R.string.ok) { dialog, _ -> dialog.dismiss() }
                 .show()
         }
 
@@ -51,21 +49,8 @@ class AboutActivity : BaseActivity() {
             Utils.openUri(this, AppConfig.APP_PRIVACY_POLICY)
         }
 
-        binding.tvVersion.text = getString(
-            R.string.about_fork_version,
-            AppConfig.FORK_DISPLAY_NAME,
-            BuildConfig.VERSION_NAME,
-            V2RayNativeManager.getLibVersion()
-        )
-        binding.tvUpstreamVersion.text = getString(
-            R.string.about_upstream_version,
-            AppConfig.UPSTREAM_VERSION_NAME
-        )
-        binding.tvAppId.text = getString(
-            R.string.about_build_identity,
-            AppConfig.FORK_MAINTAINER
-        )
-        binding.tvAppId.setTextColor(ContextCompat.getColor(this, R.color.md_theme_onSurfaceVariant))
-        binding.tvAppId.alpha = 0.72f
+        binding.tvAppName.text = AppConfig.FORK_DISPLAY_NAME
+        binding.tvVersion.text = "v${BuildConfig.VERSION_NAME}  (${V2RayNativeManager.getLibVersion()})"
+        binding.tvUpstreamVersion.text = getString(R.string.about_upstream_version, AppConfig.UPSTREAM_VERSION_NAME)
     }
 }
