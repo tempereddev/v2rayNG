@@ -6,9 +6,8 @@ import android.content.Intent
 import android.util.Log
 import com.v2ray.ang.AppConfig
 import com.v2ray.ang.handler.DownloadStateManager
-import com.v2ray.ang.handler.UpdateCheckerManager
 import com.v2ray.ang.service.DownloadApkService
-import java.io.File
+import com.v2ray.ang.ui.CheckUpdateActivity
 
 class DownloadActionReceiver : BroadcastReceiver() {
 
@@ -41,12 +40,9 @@ class DownloadActionReceiver : BroadcastReceiver() {
             }
 
             AppConfig.ACTION_INSTALL_UPDATE -> {
-                val state = DownloadStateManager.getState()
-                val filePath = state.tempFilePath ?: return
-                val file = File(filePath)
-                if (file.exists()) {
-                    UpdateCheckerManager.installApk(context, file)
-                }
+                val intent = Intent(context, CheckUpdateActivity::class.java)
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                context.startActivity(intent)
             }
         }
     }

@@ -14,10 +14,13 @@ object NetworkMonitor {
     private var connectivityManager: ConnectivityManager? = null
     private var networkCallback: ConnectivityManager.NetworkCallback? = null
     private var isRegistered = false
+    private var appContext: Context? = null
+    @Volatile private var isResuming = false
 
     fun start(context: Context) {
         if (isRegistered) return
-        connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager ?: return
+        appContext = context.applicationContext
+        connectivityManager = appContext!!.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager ?: return
 
         networkCallback = object : ConnectivityManager.NetworkCallback() {
             override fun onLost(network: Network) {
@@ -26,16 +29,19 @@ object NetworkMonitor {
                 if (state.status == DownloadStatus.DOWNLOADING) {
                     UpdateCheckerManager.isPaused = true
                     DownloadStateManager.markPaused(byNetwork = true)
+                    isResuming = false
                 }
             }
 
             override fun onAvailable(network: Network) {
                 Log.i(AppConfig.TAG, "Network restored")
+                if (isResuming) return
                 val state = DownloadStateManager.getState()
                 if (state.status == DownloadStatus.PAUSED && state.pausedByNetwork) {
                     val url = state.downloadUrl ?: return
                     val version = state.version ?: return
-                    com.v2ray.ang.service.DownloadApkService.startResume(context, url, version)
+                    isResuming = true
+                    com.v2ray.ang.service.DownloadApkService.startResume(appContext!!, url, version)
                 }
             }
         }
@@ -60,6 +66,8 @@ object NetworkMonitor {
         }
         networkCallback = null
         connectivityManager = null
+        appContext = null
         isRegistered = false
+        isResuming = false
     }
 }

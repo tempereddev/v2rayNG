@@ -56,7 +56,7 @@ object DownloadStateManager {
         saveState(DownloadState(status = DownloadStatus.CHECKING))
     }
 
-    fun markDownloading(downloadUrl: String, version: String, tempFilePath: String, totalBytes: Long) {
+    fun markDownloading(downloadUrl: String, version: String, tempFilePath: String, totalBytes: Long, resetRetryCount: Boolean = false) {
         val current = getState()
         saveState(
             current.copy(
@@ -65,6 +65,7 @@ object DownloadStateManager {
                 version = version,
                 tempFilePath = tempFilePath,
                 totalBytes = totalBytes,
+                retryCount = if (resetRetryCount) 0 else current.retryCount,
                 pausedByNetwork = false,
                 errorMessage = null,
                 lastUpdatedMs = System.currentTimeMillis()

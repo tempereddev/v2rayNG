@@ -400,7 +400,6 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
         super.onResume()
         DownloadStateManager.addObserver(this)
         checkForAppUpdate()
-        updateBannerFromState(DownloadStateManager.getState())
     }
 
     override fun onPause() {
@@ -819,14 +818,12 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
         }
 
         // Show cached banner immediately while fresh check runs in background
-        val cached = UpdateCheckerManager.getCachedUpdateResult()
-        if (cached != null && cached.hasUpdate) {
-            updateBannerFromState(currentState)
-        }
+        updateBannerFromState(currentState)
 
         lifecycleScope.launch {
             try {
-                val result = UpdateCheckerManager.checkForUpdate(false)
+                val includePreRelease = MmkvManager.decodeSettingsBool(AppConfig.PREF_CHECK_UPDATE_PRE_RELEASE, false)
+                val result = UpdateCheckerManager.checkForUpdate(includePreRelease)
                 if (result.hasUpdate) {
                     UpdateCheckerManager.cacheUpdateResult(result)
                 } else {
@@ -910,11 +907,7 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
                 binding.tvUpdateBannerAction.isVisible = true
                 binding.progressUpdateBanner.isVisible = false
                 binding.layoutUpdateBanner.setOnClickListener {
-                    val filePath = state.tempFilePath ?: return@setOnClickListener
-                    val file = java.io.File(filePath)
-                    if (file.exists()) {
-                        UpdateCheckerManager.installApk(this, file)
-                    }
+                    startActivity(Intent(this, CheckUpdateActivity::class.java))
                 }
             }
 

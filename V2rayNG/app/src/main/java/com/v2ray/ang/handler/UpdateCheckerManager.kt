@@ -52,8 +52,10 @@ object UpdateCheckerManager {
             JsonUtil.fromJson(response, GitHubRelease::class.java)
         } ?: return@withContext CheckUpdateResult(hasUpdate = false)
 
-        val tagName = latestRelease.tagName ?: return@withContext CheckUpdateResult(hasUpdate = false)
-        val latestVersion = tagName.removePrefix("v")
+        val tagName = latestRelease.tagName.takeIf { it.isNotBlank() }
+            ?: return@withContext CheckUpdateResult(hasUpdate = false)
+        val latestVersion = tagName.removePrefix("v").takeIf { it.isNotBlank() }
+            ?: return@withContext CheckUpdateResult(hasUpdate = false)
         Log.i(AppConfig.TAG, "Found version: $latestVersion (current: ${BuildConfig.VERSION_NAME})")
 
         return@withContext if (compareVersions(latestVersion, BuildConfig.VERSION_NAME) > 0) {

@@ -120,7 +120,7 @@ class DownloadApkService : Service() {
                     if (tempFile.exists()) tempFile.delete()
                 }
 
-                DownloadStateManager.markDownloading(downloadUrl, version, tempFile.absolutePath, -1)
+                DownloadStateManager.markDownloading(downloadUrl, version, tempFile.absolutePath, -1, resetRetryCount = !isResume)
 
                 val apkFile = UpdateCheckerManager.downloadApk(
                     context = this@DownloadApkService,
@@ -140,7 +140,7 @@ class DownloadApkService : Service() {
 
                 if (apkFile != null && apkFile.exists()) {
                     DownloadStateManager.markCompleted(apkFile.absolutePath)
-                    notificationManager?.notify(NOTIFICATION_ID, buildCompleteNotification(version, apkFile))
+                    notificationManager?.notify(NOTIFICATION_ID, buildCompleteNotification(version))
                     stopSelf()
                 } else {
                     handleFailure(getString(R.string.update_download_failed), downloadUrl, version)
@@ -259,7 +259,7 @@ class DownloadApkService : Service() {
             .build()
     }
 
-    private fun buildCompleteNotification(version: String, apkFile: File): android.app.Notification {
+    private fun buildCompleteNotification(version: String): android.app.Notification {
         val openActivityIntent = PendingIntent.getActivity(
             this, 0,
             Intent(this, CheckUpdateActivity::class.java)

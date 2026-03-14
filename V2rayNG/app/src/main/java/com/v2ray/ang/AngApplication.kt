@@ -7,15 +7,17 @@ import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequest
 import androidx.work.WorkManager
 import com.tencent.mmkv.MMKV
-import com.v2ray.ang.AppConfig.ANG_PACKAGE
 import com.v2ray.ang.handler.AppUpdateWorker
 import com.v2ray.ang.handler.SettingsManager
 import java.util.concurrent.TimeUnit
 
-class AngApplication : MultiDexApplication() {
+class AngApplication : MultiDexApplication(), Configuration.Provider {
     companion object {
         lateinit var application: AngApplication
     }
+
+    override val workManagerConfiguration: Configuration
+        get() = Configuration.Builder().build()
 
     /**
      * Attaches the base context to the application.
@@ -26,10 +28,6 @@ class AngApplication : MultiDexApplication() {
         application = this
     }
 
-    private val workManagerConfiguration: Configuration = Configuration.Builder()
-        .setDefaultProcessName("${ANG_PACKAGE}:bg")
-        .build()
-
     /**
      * Initializes the application.
      */
@@ -37,9 +35,6 @@ class AngApplication : MultiDexApplication() {
         super.onCreate()
 
         MMKV.initialize(this)
-
-        // Initialize WorkManager with the custom configuration
-        WorkManager.initialize(this, workManagerConfiguration)
 
         scheduleAppUpdateCheck()
 
